@@ -36,7 +36,7 @@ func main() {
 	styleCount := 0
 	cssChannel := make(chan *StylusCompileResult, 1024)
 
-	os.Mkdir(outputFolder, 0644)
+	os.Mkdir(outputFolder, 0777)
 
 	filepath.Walk(".", func(path string, f os.FileInfo, err error) error {
 		if f.IsDir() {
