@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"baseUrl": "./scripts/"
+	},
+	"include": [
+		"scripts/**/*"
+	],
+	"compileOnSave": false,
+	"buildOnSave": false
+}

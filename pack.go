@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 
-	"github.com/aerogo/aero"
+	"io/ioutil"
+
 	"github.com/aerogo/pixy"
 	"github.com/fatih/color"
 )
@@ -15,6 +16,7 @@ import (
 const (
 	pixyExtension   = ".pixy"
 	stylExtension   = ".styl"
+	scriptExtension = ".ts"
 	outputFolder    = "components"
 	outputExtension = ".go"
 )
@@ -26,100 +28,56 @@ type StylusCompileResult struct {
 }
 
 func main() {
-	// Load config file
-	app := aero.New()
-
 	pixy.PackageName = outputFolder
 
-	var css []string
-
-	styleCount := 0
-	cssChannel := make(chan *StylusCompileResult, 1024)
-
+	os.RemoveAll(outputFolder)
 	os.Mkdir(outputFolder, 0777)
 
-	filepath.Walk(".", func(path string, f os.FileInfo, err error) error {
-		if f.IsDir() {
+	filepath.Walk(".", func(file string, f os.FileInfo, err error) error {
+		if f.IsDir() || strings.HasPrefix(file, ".") {
 			return nil
 		}
 
-		switch filepath.Ext(path) {
-		// Pixy
+		switch filepath.Ext(file) {
+		// Template
 		case pixyExtension:
-			fmt.Println(" "+color.GreenString("❀"), path)
-			pixy.CompileFileAndSaveIn(path, outputFolder)
+			fmt.Println(" "+color.GreenString("❀"), file)
+			pixy.CompileFileAndSaveIn(file, outputFolder)
 
-		// Stylus
+		// Style
 		case stylExtension:
-			go func() {
-				style, err := exec.Command("stylus", "-p", "--import", "styles/config.styl", "-c", path).Output()
+			compileStyle(file)
 
-				if err != nil {
-					color.Red("Couldn't execute stylus.")
-					color.Red(err.Error())
-					cssChannel <- &StylusCompileResult{
-						file: path,
-						css:  "",
-					}
-					return
-				}
-
-				cssChannel <- &StylusCompileResult{
-					file: path,
-					css:  string(style),
-				}
-			}()
-
-			styleCount++
+			// Script
+			// case scriptExtension:
+			// compileScript(file)
 		}
 
 		return nil
 	})
 
-	// Fonts
-	fontsCSS := getFontsCSS()
+	// $.css.go
+	cssCode := "package " + pixy.PackageName + "\n\nconst BundledCSS = `" + getBundledCSS() + "`\n"
+	ioutil.WriteFile(path.Join(outputFolder, "$.css.go"), []byte(cssCode), 0644)
 
-	// CSS
-	styles := make(map[string]string)
+	// tscOutput, tscError := exec.Command("tsc").CombinedOutput()
 
-	for i := 0; i < styleCount; i++ {
-		result := <-cssChannel
-		styles[result.file] = result.css
-	}
+	// if tscError != nil {
+	// 	color.Red("Couldn't execute tsc.")
+	// 	color.Red(tscError.Error())
+	// }
 
-	// Ordered styles
-	for _, styleName := range app.Config.Styles {
-		styleName = "styles/" + styleName + ".styl"
-		styleContent := styles[styleName]
+	// fmt.Print(string(tscOutput))
 
-		if styleContent != "" {
-			fmt.Println(" "+color.GreenString("☼"), styleName)
-			css = append(css, styleContent)
-			styles[styleName] = ""
-		}
-	}
+	// Browserify & Uglify
+	// cmd := exec.Command("browserify", "-o", path.Join(outputFolder, "bundle.js"), "scripts/main.js")
+	// browserifyOutput, err := cmd.CombinedOutput()
+	// fmt.Print(string(browserifyOutput))
 
-	// Unordered styles in styles directory
-	for styleName, styleContent := range styles {
-		if strings.HasPrefix(styleName, "styles/") && styleContent != "" {
-			fmt.Println(" "+color.GreenString("☼"), styleName)
-			css = append(css, styleContent)
-			styles[styleName] = ""
-		}
-	}
-
-	// Unordered styles
-	for styleName, styleContent := range styles {
-		if styleContent != "" {
-			fmt.Println(" "+color.GreenString("☼"), styleName)
-			css = append(css, styleContent)
-			styles[styleName] = ""
-		}
-	}
-
-	bundledCSS := fontsCSS + strings.Join(css, "")
-	bundledCSS = strings.Replace(bundledCSS, "\\", "\\\\", -1)
-	bundledCSS = strings.Replace(bundledCSS, "\"", "\\\"", -1)
+	// if err != nil {
+	// 	color.Red("Couldn't execute browserify.")
+	// 	color.Red(err.Error())
+	// }
 
 	fmt.Println()
 	fmt.Println("Done.")
