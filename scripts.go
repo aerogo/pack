@@ -20,3 +20,13 @@ func compileScript(file string) {
 	// browserify .scripts/*.js -o bundle.js
 	// uglifyjs --screw-ie8
 }
+
+// Browserify & Uglify
+// cmd := exec.Command("browserify", "-o", path.Join(outputFolder, "bundle.js"), "scripts/main.js")
+// browserifyOutput, err := cmd.CombinedOutput()
+// fmt.Print(string(browserifyOutput))
+
+// if err != nil {
+// 	color.Red("Couldn't execute browserify.")
+// 	color.Red(err.Error())
+// }

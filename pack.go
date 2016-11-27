@@ -14,12 +14,12 @@ import (
 )
 
 const (
+	cacheFolder      = "/tmp/pack/"
+	outputFolder     = "components"
+	outputExtension  = ".go"
 	pixyExtension    = ".pixy"
 	scarletExtension = ".scarlet"
 	scriptExtension  = ".ts"
-	outputFolder     = "components"
-	outputExtension  = ".go"
-	cacheFolder      = "/tmp/pack/"
 )
 
 var app = aero.New()
@@ -72,24 +72,17 @@ func main() {
 		}
 	})
 
-	// Wait for all worker pools to finish
+	// Wait for all pixy workers to finish
 	pixyWorkerPool.Wait()
+	fmt.Println("")
+
+	// Wait for all scarlet workers to finish
 	styles := ToStringMap(scarletWorkerPool.Wait())
 
-	// $.css.go
+	// CSS
 	bundledCSS := base64.StdEncoding.EncodeToString(aero.StringToBytesUnsafe(getBundledCSS(styles)))
 	cssCode := "package " + pixy.PackageName + "\n\nimport \"encoding/base64\"\n\n// CSS ...\nfunc CSS() string {\ncssEncoded := `\n" + bundledCSS + "\n`\ncssDecoded, _ := base64.StdEncoding.DecodeString(cssEncoded)\nreturn string(cssDecoded)\n}\n"
 	ioutil.WriteFile(path.Join(outputFolder, "$.css.go"), aero.StringToBytesUnsafe(cssCode), 0644)
-
-	// Browserify & Uglify
-	// cmd := exec.Command("browserify", "-o", path.Join(outputFolder, "bundle.js"), "scripts/main.js")
-	// browserifyOutput, err := cmd.CombinedOutput()
-	// fmt.Print(string(browserifyOutput))
-
-	// if err != nil {
-	// 	color.Red("Couldn't execute browserify.")
-	// 	color.Red(err.Error())
-	// }
 
 	fmt.Println()
 	fmt.Println("Done.")

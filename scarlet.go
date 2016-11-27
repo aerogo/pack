@@ -10,57 +10,67 @@ import (
 )
 
 var cssCommentsRegex = regexp.MustCompile(`\/\*[^*]*\*+([^/*][^*]*\*+)*\/`)
+var styleAnnouncePrefix = " " + color.YellowString("★") + " "
 
 func scarletWork(job interface{}) interface{} {
 	file := job.(string)
-	// fmt.Println(" "+color.GreenString("☼"), file)
-
 	scarletCode, _ := ReadFile(file)
-	css, err := scarlet.Compile(scarletCode, false)
+	return scarletCode
+	// css, err := scarlet.Compile(scarletCode, false)
 
-	if err != nil {
-		color.Red("Scarlet error:")
-		color.Red(err.Error())
-	}
+	// if err != nil {
+	// 	color.Red("Scarlet error:")
+	// 	color.Red(err.Error())
+	// }
 
-	return css
+	// return css
+}
+
+func announceStyle(name string) {
+	fmt.Println(styleAnnouncePrefix, name)
 }
 
 func getBundledCSS(styles map[string]string) string {
-	css := []string{}
+	scarletCodes := []string{}
 
 	// Ordered styles
 	for _, styleName := range app.Config.Styles {
 		styleName = "styles/" + styleName + scarletExtension
-		styleContent := styles[styleName]
+		styleContent, exists := styles[styleName]
 
-		if styleContent != "" {
-			fmt.Println(" "+color.GreenString("☼"), styleName)
-			css = append(css, styleContent)
-			styles[styleName] = ""
+		if exists {
+			announceStyle(styleName)
+			scarletCodes = append(scarletCodes, styleContent)
+			delete(styles, styleName)
 		}
 	}
 
 	// Unordered styles in styles directory
 	for styleName, styleContent := range styles {
-		if strings.HasPrefix(styleName, "styles/") && styleContent != "" {
-			fmt.Println(" "+color.GreenString("☼"), styleName)
-			css = append(css, styleContent)
-			styles[styleName] = ""
+		if strings.HasPrefix(styleName, "styles/") {
+			announceStyle(styleName)
+			scarletCodes = append(scarletCodes, styleContent)
+			delete(styles, styleName)
 		}
 	}
 
 	// Unordered styles
 	for styleName, styleContent := range styles {
-		if styleContent != "" {
-			fmt.Println(" "+color.GreenString("☼"), styleName)
-			css = append(css, styleContent)
-			styles[styleName] = ""
-		}
+		announceStyle(styleName)
+		scarletCodes = append(scarletCodes, styleContent)
+		delete(styles, styleName)
+	}
+
+	allScarletCodes := strings.Join(scarletCodes, "\n")
+	css, err := scarlet.Compile(allScarletCodes, false)
+
+	if err != nil {
+		color.Red(err.Error())
+		return ""
 	}
 
 	// Fonts
 	fontsCSS := <-fontsCSSChannel
 
-	return fontsCSS + strings.Join(css, "")
+	return fontsCSS + css
 }
