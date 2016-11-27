@@ -1,73 +1,85 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
-	"io/ioutil"
-
+	"github.com/aerogo/aero"
 	"github.com/aerogo/pixy"
-	"github.com/fatih/color"
 )
 
 const (
-	pixyExtension   = ".pixy"
-	stylExtension   = ".styl"
-	scriptExtension = ".ts"
-	outputFolder    = "components"
-	outputExtension = ".go"
+	pixyExtension    = ".pixy"
+	scarletExtension = ".scarlet"
+	scriptExtension  = ".ts"
+	outputFolder     = "components"
+	outputExtension  = ".go"
+	cacheFolder      = "/tmp/pack/"
 )
 
-// StylusCompileResult ...
-type StylusCompileResult struct {
-	file string
-	css  string
-}
+var app = aero.New()
+var fontsCSSChannel = make(chan string, 1)
 
 func main() {
 	pixy.PackageName = outputFolder
 
+	// Cache folder
+	os.Mkdir(cacheFolder, 0777)
+	os.Mkdir(path.Join(cacheFolder, "fonts"), 0777)
+
+	go func() {
+		// FOR TESTING
+		app.Config.Fonts = []string{"Ubuntu"}
+
+		if len(app.Config.Fonts) > 0 {
+			cached, err := ReadFile(path.Join(cacheFolder, "fonts", strings.Join(app.Config.Fonts, "|")+".css"))
+
+			if err == nil {
+				fontsCSSChannel <- cached
+			} else {
+				fontsCSSChannel <- downloadFontsCSS(app.Config.Fonts)
+			}
+		} else {
+			fontsCSSChannel <- ""
+		}
+	}()
+
+	// Output folder
 	os.RemoveAll(outputFolder)
 	os.Mkdir(outputFolder, 0777)
 
-	filepath.Walk(".", func(file string, f os.FileInfo, err error) error {
-		if f.IsDir() || strings.HasPrefix(file, ".") {
-			return nil
-		}
+	pixyWorkerPool := NewWorkerPool(pixyWork)
+	scarletWorkerPool := NewWorkerPool(scarletWork)
 
+	scanFiles(".", func(file string) {
 		switch filepath.Ext(file) {
 		// Template
 		case pixyExtension:
-			fmt.Println(" "+color.GreenString("❀"), file)
-			pixy.CompileFileAndSaveIn(file, outputFolder)
+			pixyWorkerPool.Queue(file)
 
 		// Style
-		case stylExtension:
-			compileStyle(file)
+		case scarletExtension:
+			scarletWorkerPool.Queue(file)
 
-			// Script
-			// case scriptExtension:
-			// compileScript(file)
+		// Script
+		case scriptExtension:
+			// ...
 		}
-
-		return nil
 	})
 
+	// Wait for all worker pools to finish
+	pixyWorkerPool.Wait()
+	styles := ToStringMap(scarletWorkerPool.Wait())
+
 	// $.css.go
-	cssCode := "package " + pixy.PackageName + "\n\nconst BundledCSS = `" + getBundledCSS() + "`\n"
-	ioutil.WriteFile(path.Join(outputFolder, "$.css.go"), []byte(cssCode), 0644)
-
-	// tscOutput, tscError := exec.Command("tsc").CombinedOutput()
-
-	// if tscError != nil {
-	// 	color.Red("Couldn't execute tsc.")
-	// 	color.Red(tscError.Error())
-	// }
-
-	// fmt.Print(string(tscOutput))
+	bundledCSS := base64.StdEncoding.EncodeToString(aero.StringToBytesUnsafe(getBundledCSS(styles)))
+	cssCode := "package " + pixy.PackageName + "\n\nimport \"encoding/base64\"\n\n// CSS ...\nfunc CSS() string {\ncssEncoded := `\n" + bundledCSS + "\n`\ncssDecoded, _ := base64.StdEncoding.DecodeString(cssEncoded)\nreturn string(cssDecoded)\n}\n"
+	ioutil.WriteFile(path.Join(outputFolder, "$.css.go"), aero.StringToBytesUnsafe(cssCode), 0644)
 
 	// Browserify & Uglify
 	// cmd := exec.Command("browserify", "-o", path.Join(outputFolder, "bundle.js"), "scripts/main.js")
