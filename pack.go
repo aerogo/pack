@@ -33,9 +33,6 @@ func main() {
 	os.Mkdir(path.Join(cacheFolder, "fonts"), 0777)
 
 	go func() {
-		// FOR TESTING
-		app.Config.Fonts = []string{"Ubuntu"}
-
 		if len(app.Config.Fonts) > 0 {
 			cached, err := ReadFile(path.Join(cacheFolder, "fonts", strings.Join(app.Config.Fonts, "|")+".css"))
 
