@@ -1,6 +1,0 @@
-package: github.com/aerogo/pack
-import:
-- package: github.com/aerogo/aero
-- package: github.com/aerogo/pixy
-- package: github.com/fatih/color
-  version: ^1.1.0
