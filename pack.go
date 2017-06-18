@@ -1,13 +1,8 @@
 package main
 
 import (
-	"encoding/base64"
-	"fmt"
-	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/aerogo/aero"
 	"github.com/aerogo/pixy"
@@ -17,9 +12,9 @@ const (
 	cacheFolder      = "/tmp/pack/"
 	outputFolder     = "components"
 	outputExtension  = ".go"
+	scriptExtension  = ".js"
 	pixyExtension    = ".pixy"
 	scarletExtension = ".scarlet"
-	scriptExtension  = ".ts"
 )
 
 var app = aero.New()
@@ -28,59 +23,63 @@ var fontsCSSChannel = make(chan string, 1)
 func main() {
 	pixy.PackageName = outputFolder
 
-	// Cache folder
-	os.Mkdir(cacheFolder, 0777)
-	os.Mkdir(path.Join(cacheFolder, "fonts"), 0777)
-
-	go func() {
-		if len(app.Config.Fonts) > 0 {
-			cached, err := ReadFile(path.Join(cacheFolder, "fonts", strings.Join(app.Config.Fonts, "|")+".css"))
-
-			if err == nil {
-				fontsCSSChannel <- cached
-			} else {
-				fontsCSSChannel <- downloadFontsCSS(app.Config.Fonts)
-			}
-		} else {
-			fontsCSSChannel <- ""
-		}
-	}()
-
-	// Output folder
+	// Create a clean "components" directory
 	os.RemoveAll(outputFolder)
 	os.Mkdir(outputFolder, 0777)
 
-	pixyWorkerPool := NewWorkerPool(pixyWork)
-	scarletWorkerPool := NewWorkerPool(scarletWork)
+	// Compilers
+	compilers := []AssetCompiler{
+		AssetCompiler{
+			Extension:      ".pixy",
+			WorkerPool:     NewWorkerPool(pixyWork),
+			ProcessResults: pixyFinish,
+		},
+		AssetCompiler{
+			Extension:      ".scarlet",
+			WorkerPool:     NewWorkerPool(scarletWork),
+			ProcessResults: scarletFinish,
+		},
+		AssetCompiler{
+			Extension:      ".js",
+			WorkerPool:     NewWorkerPool(scriptWork),
+			ProcessResults: scriptFinish,
+		},
+	}
 
+	// Map file extensions to their corresponding worker pool
+	workerPools := make(map[string]*WorkerPool)
+
+	for _, compiler := range compilers {
+		workerPools[compiler.Extension] = compiler.WorkerPool
+	}
+
+	// Assign work by file extension
 	scanFiles(".", func(file string) {
-		switch filepath.Ext(file) {
-		// Template
-		case pixyExtension:
-			pixyWorkerPool.Queue(file)
+		workerPool, exists := workerPools[filepath.Ext(file)]
 
-		// Style
-		case scarletExtension:
-			scarletWorkerPool.Queue(file)
-
-		// Script
-		case scriptExtension:
-			// ...
+		if !exists {
+			return
 		}
+
+		workerPool.Queue(file)
 	})
 
-	// Wait for all pixy workers to finish
-	pixyWorkerPool.Wait()
-	fmt.Println("")
+	for _, compiler := range compilers {
+		results := compiler.WorkerPool.Wait()
+		compiler.ProcessResults(results)
+		println()
+	}
 
-	// Wait for all scarlet workers to finish
-	styles := ToStringMap(scarletWorkerPool.Wait())
+	// // Wait for all pixy workers to finish
+	// pixyWorkerPool.Wait()
+	// fmt.Println("")
 
-	// CSS
-	bundledCSS := base64.StdEncoding.EncodeToString(aero.StringToBytesUnsafe(getBundledCSS(styles)))
-	cssCode := "package " + pixy.PackageName + "\n\nimport \"encoding/base64\"\n\n// CSS ...\nfunc CSS() string {\ncssEncoded := `\n" + bundledCSS + "\n`\ncssDecoded, _ := base64.StdEncoding.DecodeString(cssEncoded)\nreturn string(cssDecoded)\n}\n"
-	ioutil.WriteFile(path.Join(outputFolder, "$.css.go"), aero.StringToBytesUnsafe(cssCode), 0644)
+	// // Scripts
+	// scripts := ToStringMap(scriptWorkerPool.Wait())
+	// for name := range scripts {
+	// 	fmt.Println(scriptAnnouncePrefix, name)
+	// }
 
-	fmt.Println()
-	fmt.Println("Done.")
+	// fmt.Println()
+	// fmt.Println("Done.")
 }

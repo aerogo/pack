@@ -2,19 +2,44 @@ package main
 
 import (
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
-	"github.com/aerogo/aero"
+	"github.com/parnurzeal/gorequest"
 )
 
-const fontsUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36"
+func init() {
+	// Cache folder
+	os.Mkdir(cacheFolder, 0777)
+	os.Mkdir(path.Join(cacheFolder, "fonts"), 0777)
+
+	go func() {
+		if len(app.Config.Fonts) > 0 {
+			cached, err := ReadFile(path.Join(cacheFolder, "fonts", strings.Join(app.Config.Fonts, "|")+".css"))
+
+			if err == nil {
+				fontsCSSChannel <- cached
+			} else {
+				fontsCSSChannel <- downloadFontsCSS(app.Config.Fonts)
+			}
+		} else {
+			fontsCSSChannel <- ""
+		}
+	}()
+}
 
 func downloadFontsCSS(fonts []string) string {
-	fontsCSS, err := aero.Get("https://fonts.googleapis.com/css?family="+strings.Join(fonts, "|")).Header("User-Agent", fontsUserAgent).Send()
+	const fontsUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36"
+
+	url := "https://fonts.googleapis.com/css?family=" + strings.Join(fonts, "|")
+
+	request := gorequest.New()
+	request.Header["User-Agent"] = fontsUserAgent
+	_, fontsCSS, err := request.Get(url).End()
 
 	if err != nil {
-		return ""
+		panic(err)
 	}
 
 	fontsCSS = strings.Replace(fontsCSS, "\r", "", -1)

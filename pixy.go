@@ -15,5 +15,9 @@ func pixyWork(job interface{}) interface{} {
 
 	pixy.CompileFileAndSaveIn(file, outputFolder)
 
-	return "done"
+	return ""
+}
+
+func pixyFinish(results WorkerPoolResults) {
+	// ...
 }

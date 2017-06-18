@@ -1,10 +1,15 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
+	"path"
 	"regexp"
 	"strings"
 
+	"github.com/aerogo/aero"
+	"github.com/aerogo/pixy"
 	"github.com/aerogo/scarlet"
 	"github.com/fatih/color"
 )
@@ -16,18 +21,23 @@ func scarletWork(job interface{}) interface{} {
 	file := job.(string)
 	scarletCode, _ := ReadFile(file)
 	return scarletCode
-	// css, err := scarlet.Compile(scarletCode, false)
-
-	// if err != nil {
-	// 	color.Red("Scarlet error:")
-	// 	color.Red(err.Error())
-	// }
-
-	// return css
 }
 
-func announceStyle(name string) {
-	fmt.Println(styleAnnouncePrefix, name)
+func scarletFinish(results WorkerPoolResults) {
+	// Convert to map[string]string
+	styles := ToStringMap(results)
+
+	// Bundled CSS
+	bundledCSS := getBundledCSS(styles)
+
+	// Encode in Base64
+	bundledCSS = base64.StdEncoding.EncodeToString(aero.StringToBytesUnsafe(bundledCSS))
+
+	// Create Go code to load the embedded CSS
+	cssCode := "package " + pixy.PackageName + "\n\nimport \"encoding/base64\"\n\n// CSS ...\nfunc CSS() string {\ncssEncoded := `\n" + bundledCSS + "\n`\ncssDecoded, _ := base64.StdEncoding.DecodeString(cssEncoded)\nreturn string(cssDecoded)\n}\n"
+
+	// Write the loader to $.css.go
+	ioutil.WriteFile(path.Join(outputFolder, "$.css.go"), aero.StringToBytesUnsafe(cssCode), 0644)
 }
 
 func getBundledCSS(styles map[string]string) string {
@@ -58,7 +68,6 @@ func getBundledCSS(styles map[string]string) string {
 	for styleName, styleContent := range styles {
 		announceStyle(styleName)
 		scarletCodes = append(scarletCodes, styleContent)
-		delete(styles, styleName)
 	}
 
 	allScarletCodes := strings.Join(scarletCodes, "\n")
@@ -73,4 +82,8 @@ func getBundledCSS(styles map[string]string) string {
 	fontsCSS := <-fontsCSSChannel
 
 	return fontsCSS + css
+}
+
+func announceStyle(name string) {
+	fmt.Println(styleAnnouncePrefix, name)
 }
