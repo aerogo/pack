@@ -18,7 +18,6 @@ const (
 )
 
 var app = aero.New()
-var fontsCSSChannel = make(chan string, 1)
 
 func main() {
 	pixy.PackageName = outputFolder

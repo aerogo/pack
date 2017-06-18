@@ -9,6 +9,8 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
+var fontsCSSChannel = make(chan string, 1)
+
 func init() {
 	// Cache folder
 	os.Mkdir(cacheFolder, 0777)
