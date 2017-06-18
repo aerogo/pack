@@ -38,7 +38,7 @@ func main() {
 	}
 
 	// Assign work by file extension
-	scanFiles(".", func(file string) {
+	ScanFiles(".", func(file string) {
 		workerPool, exists := workerPools[filepath.Ext(file)]
 
 		if !exists {
