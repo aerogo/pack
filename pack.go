@@ -1,31 +1,16 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 
 	"github.com/aerogo/aero"
-	"github.com/aerogo/pixy"
 )
 
-const (
-	cacheFolder      = "/tmp/pack/"
-	outputFolder     = "components"
-	outputExtension  = ".go"
-	scriptExtension  = ".js"
-	pixyExtension    = ".pixy"
-	scarletExtension = ".scarlet"
-)
+const cacheFolder = "/tmp/pack/"
 
 var app = aero.New()
 
 func main() {
-	pixy.PackageName = outputFolder
-
-	// Create a clean "components" directory
-	os.RemoveAll(outputFolder)
-	os.Mkdir(outputFolder, 0777)
-
 	// Compilers
 	compilers := []AssetCompiler{
 		AssetCompiler{
@@ -68,17 +53,4 @@ func main() {
 		compiler.ProcessResults(results)
 		println()
 	}
-
-	// // Wait for all pixy workers to finish
-	// pixyWorkerPool.Wait()
-	// fmt.Println("")
-
-	// // Scripts
-	// scripts := ToStringMap(scriptWorkerPool.Wait())
-	// for name := range scripts {
-	// 	fmt.Println(scriptAnnouncePrefix, name)
-	// }
-
-	// fmt.Println()
-	// fmt.Println("Done.")
 }
