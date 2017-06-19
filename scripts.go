@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/aerogo/pixy"
@@ -51,25 +52,27 @@ func scriptFinish(results WorkerPoolResults) {
 	modules := make([]string, 0, len(results))
 
 	for job, result := range results {
-		filePath := job.(string)
+		file := job.(string)
 		code := result.(string)
 		code = strings.TrimPrefix(code, `"use strict";`)
 		code = strings.TrimSpace(code)
 		code = strings.TrimPrefix(code, `Object.defineProperty(exports, "__esModule", { value: true });`)
 		// code = strings.TrimSpace(code)
 
-		moduleCode := `"` + strings.TrimSuffix(filePath, ".js") + `": function(exports) {` + code + "\n" + "}"
+		scriptDir := filepath.Dir(file)
+		code = strings.Replace(code, `require("./`, `require("`+scriptDir+`/`, -1)
+
+		moduleCode := `"` + strings.TrimSuffix(file, ".js") + `": function(exports) {` + code + "\n" + "}"
 		modules = append(modules, moduleCode)
 
-		fmt.Println(scriptAnnouncePrefix, filePath)
+		fmt.Println(scriptAnnouncePrefix, file)
 	}
-
-	m := minify.New()
 
 	moduleList := strings.Join(modules, ",\n")
 	bundledJS := strings.Replace(moduleLoader, "${PACK_MODULES}", moduleList, 1) + "\n" + `require("scripts/` + app.Config.Scripts.Main + `");`
 
-	// Minify
+	// // Minify
+	m := minify.New()
 	var buffer bytes.Buffer
 	writer := bufio.NewWriter(&buffer)
 	js.Minify(m, writer, strings.NewReader(bundledJS), nil)
