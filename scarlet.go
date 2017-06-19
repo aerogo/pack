@@ -1,14 +1,11 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"path"
 	"regexp"
 	"strings"
 
-	"github.com/aerogo/aero"
 	"github.com/aerogo/pixy"
 	"github.com/aerogo/scarlet"
 	"github.com/fatih/color"
@@ -30,14 +27,8 @@ func scarletFinish(results WorkerPoolResults) {
 	// Bundled CSS
 	bundledCSS := getBundledCSS(styles)
 
-	// Encode in Base64
-	bundledCSS = base64.StdEncoding.EncodeToString(aero.StringToBytesUnsafe(bundledCSS))
-
-	// Create Go code to load the embedded CSS
-	cssCode := "package " + pixy.PackageName + "\n\nimport \"encoding/base64\"\n\n// CSS ...\nfunc CSS() string {\ncssEncoded := `\n" + bundledCSS + "\n`\ncssDecoded, _ := base64.StdEncoding.DecodeString(cssEncoded)\nreturn string(cssDecoded)\n}\n"
-
-	// Write the loader to $.css.go
-	ioutil.WriteFile(path.Join(outputFolder, "$.css.go"), aero.StringToBytesUnsafe(cssCode), 0644)
+	// Write CSS bundle into $.css.go where it can be referenced as components.CSS
+	EmbedData(path.Join(outputFolder, "$.css.go"), pixy.PackageName, "CSS", bundledCSS)
 }
 
 func getBundledCSS(styles map[string]string) string {
