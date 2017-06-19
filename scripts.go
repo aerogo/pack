@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"path"
@@ -8,6 +10,8 @@ import (
 
 	"github.com/aerogo/pixy"
 	"github.com/fatih/color"
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/js"
 )
 
 var scriptAnnouncePrefix = " " + color.CyanString("❄") + " "
@@ -60,8 +64,17 @@ func scriptFinish(results WorkerPoolResults) {
 		fmt.Println(scriptAnnouncePrefix, filePath)
 	}
 
+	m := minify.New()
+
 	moduleList := strings.Join(modules, ",\n")
 	bundledJS := strings.Replace(moduleLoader, "${PACK_MODULES}", moduleList, 1) + "\n" + `require("scripts/` + app.Config.Scripts.Main + `");`
+
+	// Minify
+	var buffer bytes.Buffer
+	writer := bufio.NewWriter(&buffer)
+	js.Minify(m, writer, strings.NewReader(bundledJS), nil)
+	writer.Flush()
+	bundledJS = buffer.String()
 
 	// Write JS bundle into $.js.go where it can be referenced as components.JS
 	EmbedData(path.Join(outputFolder, "$.js.go"), pixy.PackageName, "JS", bundledJS)
