@@ -26,7 +26,7 @@ function require(path) {
 	var loader = _modules[path];
 	
 	if(!loader)
-		throw "Module not found";
+		throw "Module not found: " + path;
 	
 	if(loader.exports !== undefined)
 		return loader.exports;
