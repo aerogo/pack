@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/OneOfOne/xxhash"
 	"github.com/aerogo/pixy"
@@ -21,7 +22,6 @@ func init() {
 	pixy.PackageName = outputFolder
 
 	// Create a clean "components" directory
-	os.RemoveAll(outputFolder)
 	os.Mkdir(outputFolder, 0777)
 
 	// Get working directory
@@ -47,10 +47,7 @@ func pixyWork(job interface{}) interface{} {
 		panic(err)
 	}
 
-	h := xxhash.NewS64(0)
-	h.WriteString(fullPath)
-	hash := strconv.FormatUint(h.Sum64(), 16)
-
+	hash := hashString(fullPath)
 	pixyCacheDir := path.Join(cacheFolder, "pixy", hash)
 
 	cacheStat, cacheErr := os.Stat(pixyCacheDir)
@@ -63,24 +60,17 @@ func pixyWork(job interface{}) interface{} {
 			panic(err)
 		}
 
+		components := []*pixy.Component{}
+
 		for _, file := range files {
-			in := path.Join(pixyCacheDir, file.Name())
-			out := path.Join(outputFolder, file.Name())
-
-			code, err := ioutil.ReadFile(in)
-
-			if err != nil {
-				panic(err)
-			}
-
-			err = ioutil.WriteFile(out, code, 0644)
-
-			if err != nil {
-				panic(err)
-			}
+			component := strings.TrimSuffix(file.Name(), ".go")
+			components = append(components, &pixy.Component{
+				Name: component,
+				Code: "",
+			})
 		}
 
-		return ""
+		return components
 	}
 
 	// We need a fresh recompile
@@ -96,9 +86,55 @@ func pixyWork(job interface{}) interface{} {
 		component.Save(pixyCacheDir)
 	}
 
-	return ""
+	return components
 }
 
 func pixyFinish(results WorkerPoolResults) {
+	utilitiesExist := false
+
+	// Create a map of available components
+	compiledComponents := make(map[string]bool)
+
+	for _, result := range results {
+		components := result.([]*pixy.Component)
+
+		for _, component := range components {
+			compiledComponents[component.Name] = true
+		}
+	}
+
+	// Delete all components that were removed
+	files, _ := ioutil.ReadDir(outputFolder)
+
+	for _, file := range files {
+		if strings.HasPrefix(file.Name(), "$") {
+			if file.Name() == "$.go" {
+				utilitiesExist = true
+			}
+
+			continue
+		}
+
+		component := strings.TrimSuffix(file.Name(), ".go")
+		_, exists := compiledComponents[component]
+
+		if exists {
+			continue
+		}
+
+		generatedOldFile := path.Join(outputFolder, file.Name())
+		os.Remove(generatedOldFile)
+	}
+
+	if utilitiesExist {
+		return
+	}
+
 	pixy.SaveUtilities(outputFolder)
+}
+
+func hashString(data string) string {
+	h := xxhash.NewS64(0)
+	h.WriteString(data)
+	return strconv.FormatUint(h.Sum64(), 16)
 }
