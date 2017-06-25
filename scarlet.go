@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"path"
 	"regexp"
+	"sort"
 	"strings"
 
-	"github.com/aerogo/pixy"
 	"github.com/aerogo/scarlet"
 	"github.com/fatih/color"
 )
@@ -28,7 +28,7 @@ func scarletFinish(results WorkerPoolResults) {
 	bundledCSS := getBundledCSS(styles)
 
 	// Write CSS bundle into $.css.go where it can be referenced as components.CSS
-	EmbedData(path.Join(outputFolder, "$.css.go"), pixy.PackageName, "CSS", bundledCSS)
+	EmbedData(path.Join(outputFolder, "css", "css.go"), "css", "Bundle", bundledCSS)
 }
 
 func getBundledCSS(styles map[string]string) string {
@@ -46,11 +46,14 @@ func getBundledCSS(styles map[string]string) string {
 		}
 	}
 
+	// Create a slice which we will sort later
+	unorderedStyles := []string{}
+
 	// Unordered styles in styles directory
 	for styleName, styleContent := range styles {
 		if strings.HasPrefix(styleName, "styles/") {
 			announceStyle(styleName)
-			scarletCodes = append(scarletCodes, styleContent)
+			unorderedStyles = append(unorderedStyles, styleContent)
 			delete(styles, styleName)
 		}
 	}
@@ -58,8 +61,16 @@ func getBundledCSS(styles map[string]string) string {
 	// Unordered styles
 	for styleName, styleContent := range styles {
 		announceStyle(styleName)
-		scarletCodes = append(scarletCodes, styleContent)
+		unorderedStyles = append(unorderedStyles, styleContent)
 	}
+
+	// This doesn't really have any meaning besides making the order deterministic.
+	// Since the order is well defined and not random, hash based caching will work.
+	sort.Slice(unorderedStyles, func(i, j int) bool {
+		return len(unorderedStyles[i]) < len(unorderedStyles[j])
+	})
+
+	scarletCodes = append(scarletCodes, unorderedStyles...)
 
 	allScarletCodes := strings.Join(scarletCodes, "\n")
 	css, err := scarlet.Compile(allScarletCodes, false)

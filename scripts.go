@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
-	"github.com/aerogo/pixy"
 	"github.com/fatih/color"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
@@ -68,6 +68,12 @@ func scriptFinish(results WorkerPoolResults) {
 		fmt.Println(scriptAnnouncePrefix, file)
 	}
 
+	// This doesn't really have any meaning besides making the order deterministic.
+	// Since the order is well defined and not random, hash based caching will work.
+	sort.Slice(modules, func(i, j int) bool {
+		return len(modules[i]) < len(modules[j])
+	})
+
 	moduleList := strings.Join(modules, ",\n")
 	bundledJS := strings.Replace(moduleLoader, "${PACK_MODULES}", moduleList, 1) + "\n" + `require("scripts/` + app.Config.Scripts.Main + `");`
 
@@ -80,5 +86,5 @@ func scriptFinish(results WorkerPoolResults) {
 	bundledJS = buffer.String()
 
 	// Write JS bundle into $.js.go where it can be referenced as components.JS
-	EmbedData(path.Join(outputFolder, "$.js.go"), pixy.PackageName, "JS", bundledJS)
+	EmbedData(path.Join(outputFolder, "js", "js.go"), "js", "Bundle", bundledJS)
 }

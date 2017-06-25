@@ -1,13 +1,13 @@
 package main
 
 import (
-	"encoding/base64"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
-	"github.com/aerogo/aero"
+	"github.com/OneOfOne/xxhash"
 )
 
 // ReadFile reads in a file as a string
@@ -40,14 +40,16 @@ func ScanFiles(dir string, cb func(string)) {
 	})
 }
 
-// EmbedData embeds base64-encoded data in a Go function.
-func EmbedData(outputFile, packageName, funcName, data string) {
-	// Encode in Base64
-	data = base64.StdEncoding.EncodeToString(aero.StringToBytesUnsafe(data))
+// HashString hashes a long string to a shorter representation.
+func HashString(data string) string {
+	h := xxhash.NewS64(0)
+	h.WriteString(data)
+	return strconv.FormatUint(h.Sum64(), 16)
+}
 
-	// Create Go code to load the embedded data
-	loader := "package " + packageName + "\n\nimport \"encoding/base64\"\n\n// " + funcName + " ...\nfunc " + funcName + "() string {\nencoded := `\n" + data + "\n`\ndecoded, _ := base64.StdEncoding.DecodeString(encoded)\nreturn string(decoded)\n}\n"
-
-	// Write the loader
-	ioutil.WriteFile(outputFile, aero.StringToBytesUnsafe(loader), 0644)
+// PanicOnError will panic if the error is not nil.
+func PanicOnError(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

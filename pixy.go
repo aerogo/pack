@@ -5,15 +5,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 
-	"github.com/OneOfOne/xxhash"
 	"github.com/aerogo/pixy"
 	"github.com/fatih/color"
 )
 
-const outputFolder = "components"
+var outputFolder = "./components"
 
 var pixyAnnouncePrefix = " " + color.GreenString("❀") + " "
 var workDir = "./"
@@ -23,6 +21,8 @@ func init() {
 
 	// Create a clean "components" directory
 	os.Mkdir(outputFolder, 0777)
+	os.Mkdir(path.Join(outputFolder, "css"), 0777)
+	os.Mkdir(path.Join(outputFolder, "js"), 0777)
 
 	// Get working directory
 	var err error
@@ -33,7 +33,7 @@ func init() {
 	}
 
 	// Create pixy cache
-	os.Mkdir(cacheFolder+"pixy", 0777)
+	os.Mkdir(path.Join(cacheFolder, "pixy"), 0777)
 }
 
 func pixyWork(job interface{}) interface{} {
@@ -47,7 +47,7 @@ func pixyWork(job interface{}) interface{} {
 		panic(err)
 	}
 
-	hash := hashString(fullPath)
+	hash := HashString(fullPath)
 	pixyCacheDir := path.Join(cacheFolder, "pixy", hash)
 
 	cacheStat, cacheErr := os.Stat(pixyCacheDir)
@@ -107,22 +107,24 @@ func pixyFinish(results WorkerPoolResults) {
 	files, _ := ioutil.ReadDir(outputFolder)
 
 	for _, file := range files {
-		if strings.HasPrefix(file.Name(), "$") {
-			if file.Name() == "$.go" {
+		fileName := file.Name()
+
+		if strings.HasPrefix(fileName, "$") || fileName == "css" || fileName == "js" {
+			if fileName == "$.go" {
 				utilitiesExist = true
 			}
 
 			continue
 		}
 
-		component := strings.TrimSuffix(file.Name(), ".go")
+		component := strings.TrimSuffix(fileName, ".go")
 		_, exists := compiledComponents[component]
 
 		if exists {
 			continue
 		}
 
-		generatedOldFile := path.Join(outputFolder, file.Name())
+		generatedOldFile := path.Join(outputFolder, fileName)
 		os.Remove(generatedOldFile)
 	}
 
@@ -131,10 +133,4 @@ func pixyFinish(results WorkerPoolResults) {
 	}
 
 	pixy.SaveUtilities(outputFolder)
-}
-
-func hashString(data string) string {
-	h := xxhash.NewS64(0)
-	h.WriteString(data)
-	return strconv.FormatUint(h.Sum64(), 16)
 }
