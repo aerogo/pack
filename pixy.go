@@ -11,7 +11,7 @@ import (
 	"github.com/fatih/color"
 )
 
-var outputFolder = "./components"
+var outputFolder = "components"
 
 var pixyAnnouncePrefix = " " + color.GreenString("❀") + " "
 var workDir = "./"
