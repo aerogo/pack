@@ -12,6 +12,7 @@ import (
 )
 
 var outputFolder = "components"
+var outputFolderExisted bool
 
 var pixyAnnouncePrefix = " " + color.GreenString("❀") + " "
 var workDir = "./"
@@ -20,9 +21,15 @@ func init() {
 	pixy.PackageName = outputFolder
 
 	// Create a clean "components" directory
-	os.Mkdir(outputFolder, 0777)
-	os.Mkdir(path.Join(outputFolder, "css"), 0777)
-	os.Mkdir(path.Join(outputFolder, "js"), 0777)
+	if _, statErr := os.Stat(outputFolder); os.IsNotExist(statErr) {
+		outputFolderExisted = false
+
+		os.Mkdir(outputFolder, 0777)
+		os.Mkdir(path.Join(outputFolder, "css"), 0777)
+		os.Mkdir(path.Join(outputFolder, "js"), 0777)
+	} else {
+		outputFolderExisted = true
+	}
 
 	// Get working directory
 	var err error
@@ -50,27 +57,29 @@ func pixyWork(job interface{}) interface{} {
 	hash := HashString(fullPath)
 	pixyCacheDir := path.Join(cacheFolder, "pixy", hash)
 
-	cacheStat, cacheErr := os.Stat(pixyCacheDir)
+	if outputFolderExisted {
+		cacheStat, cacheErr := os.Stat(pixyCacheDir)
 
-	// Use cached version if possible
-	if cacheErr == nil && cacheStat.ModTime().Unix() > fileStat.ModTime().Unix() {
-		files, err := ioutil.ReadDir(pixyCacheDir)
+		// Use cached version if possible
+		if cacheErr == nil && cacheStat.ModTime().Unix() > fileStat.ModTime().Unix() {
+			files, err := ioutil.ReadDir(pixyCacheDir)
 
-		if err != nil {
-			panic(err)
+			if err != nil {
+				panic(err)
+			}
+
+			components := []*pixy.Component{}
+
+			for _, file := range files {
+				component := strings.TrimSuffix(file.Name(), ".go")
+				components = append(components, &pixy.Component{
+					Name: component,
+					Code: "",
+				})
+			}
+
+			return components
 		}
-
-		components := []*pixy.Component{}
-
-		for _, file := range files {
-			component := strings.TrimSuffix(file.Name(), ".go")
-			components = append(components, &pixy.Component{
-				Name: component,
-				Code: "",
-			})
-		}
-
-		return components
 	}
 
 	// We need a fresh recompile
