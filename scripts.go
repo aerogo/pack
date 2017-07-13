@@ -54,6 +54,12 @@ func scriptFinish(results WorkerPoolResults) {
 	for job, result := range results {
 		file := job.(string)
 		code := result.(string)
+
+		// Module that have the pack:ignore comment at the top will be ignored
+		if strings.HasPrefix(code, "// pack:ignore") {
+			continue
+		}
+
 		code = strings.TrimPrefix(code, `"use strict";`)
 		code = strings.TrimSpace(code)
 		code = strings.TrimPrefix(code, `Object.defineProperty(exports, "__esModule", { value: true });`)
