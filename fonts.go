@@ -37,7 +37,7 @@ func downloadFontsCSS(fonts []string) string {
 	url := "https://fonts.googleapis.com/css?family=" + strings.Join(fonts, "|")
 
 	request := gorequest.New()
-	request.Header["User-Agent"] = fontsUserAgent
+	request.Header.Set("User-Agent", fontsUserAgent)
 	_, fontsCSS, err := request.Get(url).End()
 
 	if err != nil {
