@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/aerogo/flow/jobqueue"
 	"github.com/aerogo/pixy"
 	"github.com/fatih/color"
 )
@@ -98,7 +99,7 @@ func pixyWork(job interface{}) interface{} {
 	return components
 }
 
-func pixyFinish(results WorkerPoolResults) {
+func pixyFinish(results jobqueue.Results) {
 	utilitiesExist := false
 
 	// Create a map of available components

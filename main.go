@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/aerogo/aero"
+	"github.com/aerogo/flow/jobqueue"
 )
 
 const cacheFolder = "/tmp/pack/"
@@ -15,26 +16,26 @@ func main() {
 	compilers := []AssetCompiler{
 		AssetCompiler{
 			Extension:      ".pixy",
-			WorkerPool:     NewWorkerPool(pixyWork),
+			Jobs:           jobqueue.New(pixyWork, 4096),
 			ProcessResults: pixyFinish,
 		},
 		AssetCompiler{
 			Extension:      ".scarlet",
-			WorkerPool:     NewWorkerPool(scarletWork),
+			Jobs:           jobqueue.New(scarletWork, 4096),
 			ProcessResults: scarletFinish,
 		},
 		AssetCompiler{
 			Extension:      ".js",
-			WorkerPool:     NewWorkerPool(scriptWork),
+			Jobs:           jobqueue.New(scriptWork, 4096),
 			ProcessResults: scriptFinish,
 		},
 	}
 
 	// Map file extensions to their corresponding worker pool
-	workerPools := make(map[string]*WorkerPool)
+	workerPools := make(map[string]*jobqueue.JobQueue)
 
 	for _, compiler := range compilers {
-		workerPools[compiler.Extension] = compiler.WorkerPool
+		workerPools[compiler.Extension] = compiler.Jobs
 	}
 
 	// Assign work by file extension
@@ -49,7 +50,7 @@ func main() {
 	})
 
 	for _, compiler := range compilers {
-		results := compiler.WorkerPool.Wait()
+		results := compiler.Jobs.Wait()
 		compiler.ProcessResults(results)
 		println()
 	}

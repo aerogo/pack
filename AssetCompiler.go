@@ -1,8 +1,12 @@
 package main
 
+import (
+	"github.com/aerogo/flow/jobqueue"
+)
+
 // AssetCompiler ...
 type AssetCompiler struct {
 	Extension      string
-	WorkerPool     *WorkerPool
-	ProcessResults func(WorkerPoolResults)
+	Jobs           *jobqueue.JobQueue
+	ProcessResults func(jobqueue.Results)
 }

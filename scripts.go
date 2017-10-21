@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aerogo/flow/jobqueue"
 	"github.com/fatih/color"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
@@ -44,7 +45,7 @@ func scriptWork(job interface{}) interface{} {
 	return scriptCode
 }
 
-func scriptFinish(results WorkerPoolResults) {
+func scriptFinish(results jobqueue.Results) {
 	if app.Config.Scripts.Main == "" {
 		panic(errors.New("Main script file has not been defined in config.json (config.scripts.main)"))
 	}

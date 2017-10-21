@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aerogo/flow/jobqueue"
 	"github.com/aerogo/scarlet"
 	"github.com/fatih/color"
 )
@@ -20,7 +21,7 @@ func scarletWork(job interface{}) interface{} {
 	return scarletCode
 }
 
-func scarletFinish(results WorkerPoolResults) {
+func scarletFinish(results jobqueue.Results) {
 	// Convert to map[string]string
 	styles := ToStringMap(results)
 
