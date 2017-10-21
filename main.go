@@ -16,17 +16,17 @@ func main() {
 	compilers := []AssetCompiler{
 		AssetCompiler{
 			Extension:      ".pixy",
-			Jobs:           jobqueue.New(pixyWork, 4096),
+			Jobs:           jobqueue.New(pixyWork),
 			ProcessResults: pixyFinish,
 		},
 		AssetCompiler{
 			Extension:      ".scarlet",
-			Jobs:           jobqueue.New(scarletWork, 4096),
+			Jobs:           jobqueue.New(scarletWork),
 			ProcessResults: scarletFinish,
 		},
 		AssetCompiler{
 			Extension:      ".js",
-			Jobs:           jobqueue.New(scriptWork, 4096),
+			Jobs:           jobqueue.New(scriptWork),
 			ProcessResults: scriptFinish,
 		},
 	}
