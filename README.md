@@ -23,7 +23,7 @@ Pack uses parallel compilation via job queues and is therefore extremely fast, m
 
 ## Components
 
-Since `components` is a generated directory you should have this directory in your `.gitignore` file.
+Since `components` is a generated directory you should list this directory in your `.gitignore` file.
 
 ### CSS
 
