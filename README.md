@@ -28,7 +28,11 @@ Since `components` is a generated directory you should list this directory in yo
 ### CSS
 
 ```go
-components.CSS()
+import "github.com/.../.../components/css"
+```
+
+```go
+css.Bundle()
 ```
 
 Returns the CSS bundle which is a string of CSS containing all styles.
@@ -36,7 +40,11 @@ Returns the CSS bundle which is a string of CSS containing all styles.
 ### JS
 
 ```go
-components.JS()
+import "github.com/.../.../components/js"
+```
+
+```go
+js.Bundle()
 ```
 
 Returns the JS bundle which is a string of JS containing all scripts.
