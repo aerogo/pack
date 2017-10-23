@@ -19,7 +19,7 @@ go install github.com/aerogo/pack
 
 ![pack usage](docs/usage.gif)
 
-Run `pack` in your project directory. It will scan your project directory recursively to compile `.pixy`, `.scarlet` and `.js` files to generate a `components` package in your root directory. You can then import the `components` package in your project to access all of your assets.
+Run `pack` in your project directory. It will scan your project directory recursively to compile `.pixy`, `.scarlet` and `.js` files resulting in a `components` package in your root directory. You can then import the `components` package in your project to access all of your assets.
 
 ## Components
 
