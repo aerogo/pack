@@ -51,4 +51,8 @@ Returns the JS bundle which is a string of JS containing all scripts.
 
 ### Templates
 
+```go
+import "github.com/.../.../components"
+```
+
 Templates are registered as public functions in the `components` package and can be called directly. All components are global, thus you can call a component from one file in another file without any import directives. Components return an HTML `string` but they use a single `bytes.Buffer` via pooling and streaming under the hood, which is extremely fast.
