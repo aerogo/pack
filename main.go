@@ -52,6 +52,9 @@ func main() {
 	for _, compiler := range compilers {
 		results := compiler.Jobs.Wait()
 		compiler.ProcessResults(results)
-		println()
+
+		if len(results) > 0 {
+			println()
+		}
 	}
 }
