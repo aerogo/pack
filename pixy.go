@@ -119,11 +119,12 @@ func pixyFinish(results jobqueue.Results) {
 	for _, file := range files {
 		fileName := file.Name()
 
-		if strings.HasPrefix(fileName, "$") || fileName == "css" || fileName == "js" {
-			if fileName == "$.go" {
-				utilitiesExist = true
-			}
+		if fileName == "utils.go" {
+			utilitiesExist = true
+			continue
+		}
 
+		if fileName == "css" || fileName == "js" {
 			continue
 		}
 
@@ -142,5 +143,5 @@ func pixyFinish(results jobqueue.Results) {
 		return
 	}
 
-	pixy.SaveUtilities(outputFolder)
+	pixy.SaveUtilities(path.Join(outputFolder, "utils.go"))
 }
