@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/parnurzeal/gorequest"
+	"github.com/aerogo/http/client"
 )
 
 var fontsCSSChannel = make(chan string, 1)
@@ -35,15 +35,13 @@ func downloadFontsCSS(fonts []string) string {
 	const fontsUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36"
 
 	url := "https://fonts.googleapis.com/css?family=" + strings.Join(fonts, "|")
-
-	request := gorequest.New()
-	request.Header.Set("User-Agent", fontsUserAgent)
-	_, fontsCSS, err := request.Get(url).End()
+	response, err := client.Get(url).Header("User-Agent", fontsUserAgent).End()
 
 	if err != nil {
 		panic(err)
 	}
 
+	fontsCSS := response.String()
 	fontsCSS = strings.Replace(fontsCSS, "\r", "", -1)
 	fontsCSS = strings.Replace(fontsCSS, "\n", "", -1)
 	fontsCSS = strings.Replace(fontsCSS, "  ", " ", -1)
