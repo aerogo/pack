@@ -67,7 +67,10 @@ func scriptFinish(results jobqueue.Results) {
 		// code = strings.TrimSpace(code)
 
 		scriptDir := filepath.Dir(file)
+
+		// TODO: This is really hacky. Replace this with a proper algorithm.
 		code = strings.Replace(code, `require("./`, `require("`+scriptDir+`/`, -1)
+		code = strings.Replace(code, `require("../`, `require("`+filepath.Clean(path.Join(scriptDir, ".."))+`/`, -1)
 
 		moduleCode := `"` + strings.TrimSuffix(file, ".js") + `": function(exports) {` + code + "\n" + "}"
 		modules = append(modules, moduleCode)
