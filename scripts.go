@@ -72,7 +72,13 @@ func scriptFinish(results jobqueue.Results) {
 		code = strings.Replace(code, `require("./`, `require("`+scriptDir+`/`, -1)
 		code = strings.Replace(code, `require("../`, `require("`+filepath.Clean(path.Join(scriptDir, ".."))+`/`, -1)
 
-		moduleCode := `"` + strings.TrimSuffix(file, ".js") + `": function(exports) {` + code + "\n" + "}"
+		// Remove file extension from module path
+		modulePath := strings.TrimSuffix(file, ".js")
+
+		// Index files are implied so we don't need them in the path
+		modulePath = strings.TrimSuffix(modulePath, "/index")
+
+		moduleCode := `"` + modulePath + `": function(exports) {` + code + "\n" + "}"
 		modules = append(modules, moduleCode)
 
 		fmt.Println(scriptAnnouncePrefix, file)
