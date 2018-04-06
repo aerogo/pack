@@ -12,19 +12,27 @@ import (
 	"github.com/fatih/color"
 )
 
-var outputFolder = "components"
-var outputFolderExisted bool
+var (
+	// Output folder is the name of the generated components directory.
+	outputFolder = "components"
 
-var pixyAnnouncePrefix = " " + color.GreenString("❀") + " "
-var workDir = "./"
+	// This flag tells us whether the output folder existed at runtime.
+	// If it did not exist, then we don't need to check for a cached version.
+	outputFolderExisted = false
+
+	// The compiler for pixy files is initialized with the package name.
+	pixyCompiler = pixy.NewCompiler(outputFolder)
+
+	// Pixy announce prefix is the prefix used for terminal output on each file.
+	pixyAnnouncePrefix = " " + color.GreenString("❀") + " "
+
+	// This will contain the current working directory.
+	workDir = "./"
+)
 
 func init() {
-	pixy.PackageName = outputFolder
-
 	// Create a clean "components" directory
 	if _, statErr := os.Stat(outputFolder); os.IsNotExist(statErr) {
-		outputFolderExisted = false
-
 		os.Mkdir(outputFolder, 0777)
 		os.Mkdir(path.Join(outputFolder, "css"), 0777)
 		os.Mkdir(path.Join(outputFolder, "js"), 0777)
@@ -84,7 +92,12 @@ func pixyWork(job interface{}) interface{} {
 	}
 
 	// We need a fresh recompile
-	components := pixy.CompileFileAndSaveIn(file, outputFolder)
+	components, err := pixyCompiler.CompileFileAndSaveIn(file, outputFolder)
+
+	if err != nil {
+		color.Red(err.Error())
+		return nil
+	}
 
 	// Start with an empty directory.
 	// This will also reset the ModTime() of the directory.
@@ -143,5 +156,5 @@ func pixyFinish(results jobqueue.Results) {
 		return
 	}
 
-	pixy.SaveUtilities(path.Join(outputFolder, "utils.go"))
+	pixyCompiler.SaveUtilities(path.Join(outputFolder, "utils.go"))
 }
