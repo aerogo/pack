@@ -56,6 +56,11 @@ func scriptFinish(results jobqueue.Results) {
 		file := job.(string)
 		code := result.(string)
 
+		// Skip empty files
+		if len(code) == 0 {
+			continue
+		}
+
 		// Module that have the pack:ignore comment at the top will be ignored
 		if strings.HasPrefix(code, "// pack:ignore") {
 			continue
@@ -87,7 +92,14 @@ func scriptFinish(results jobqueue.Results) {
 	// This doesn't really have any meaning besides making the order deterministic.
 	// Since the order is well defined and not random, hash based caching will work.
 	sort.Slice(modules, func(i, j int) bool {
-		return len(modules[i]) < len(modules[j])
+		a := modules[i]
+		b := modules[j]
+
+		if len(a) == len(b) {
+			return HashString(a) < HashString(b)
+		}
+
+		return len(a) < len(b)
 	})
 
 	moduleList := strings.Join(modules, ",\n")

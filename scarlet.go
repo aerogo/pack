@@ -68,7 +68,14 @@ func getBundledCSS(styles map[string]string) string {
 	// This doesn't really have any meaning besides making the order deterministic.
 	// Since the order is well defined and not random, hash based caching will work.
 	sort.Slice(unorderedStyles, func(i, j int) bool {
-		return len(unorderedStyles[i]) < len(unorderedStyles[j])
+		a := unorderedStyles[i]
+		b := unorderedStyles[j]
+
+		if len(a) == len(b) {
+			return HashString(a) < HashString(b)
+		}
+
+		return len(a) < len(b)
 	})
 
 	scarletCodes = append(scarletCodes, unorderedStyles...)
