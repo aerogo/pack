@@ -46,12 +46,18 @@ func downloadFontsCSS(fonts []string) string {
 	fontsCSS = strings.Replace(fontsCSS, "\n", "", -1)
 	fontsCSS = strings.Replace(fontsCSS, "  ", " ", -1)
 	fontsCSS = strings.Replace(fontsCSS, "{ ", "{", -1)
+	fontsCSS = strings.Replace(fontsCSS, " {", "{", -1)
 	fontsCSS = strings.Replace(fontsCSS, ": ", ":", -1)
 	fontsCSS = strings.Replace(fontsCSS, "; ", ";", -1)
 	fontsCSS = strings.Replace(fontsCSS, ", ", ",", -1)
 
 	// Remove CSS comments
 	fontsCSS = cssCommentsRegex.ReplaceAllString(fontsCSS, "")
+
+	// If font-display is not set, set it:
+	if !strings.Contains(fontsCSS, "font-display") {
+		fontsCSS = strings.Replace(fontsCSS, "@font-face{", "@font-face{font-display:swap;", -1)
+	}
 
 	// Save in cache
 	ioutil.WriteFile(path.Join(cacheFolder, "fonts", strings.Join(app.Config.Fonts, "|")+".css"), []byte(fontsCSS), 0777)
