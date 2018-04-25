@@ -136,7 +136,11 @@ func pixyFinish(results jobqueue.Results) {
 
 		// Add import paths after each file has been written
 		for _, file := range result.Files {
-			pixy.AddImportPaths(file)
+			err := pixy.AddImportPaths(file)
+
+			if err != nil {
+				color.Red("Couldn't execute goimports: %v", err)
+			}
 		}
 	}
 
