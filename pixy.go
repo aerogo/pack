@@ -30,6 +30,11 @@ var (
 	workDir = "./"
 )
 
+type pixyCompilationResult struct {
+	Components []*pixy.Component
+	Files      []string
+}
+
 func init() {
 	// Create a clean "components" directory
 	if _, statErr := os.Stat(outputFolder); os.IsNotExist(statErr) {
@@ -83,16 +88,17 @@ func pixyWork(job interface{}) interface{} {
 				component := strings.TrimSuffix(file.Name(), ".go")
 				components = append(components, &pixy.Component{
 					Name: component,
-					Code: "",
 				})
 			}
 
-			return components
+			return &pixyCompilationResult{
+				Components: components,
+			}
 		}
 	}
 
 	// We need a fresh recompile
-	components, err := pixyCompiler.CompileFileAndSaveIn(file, outputFolder)
+	components, files, err := pixyCompiler.CompileFileAndSaveIn(file, outputFolder)
 
 	if err != nil {
 		color.Red(err.Error())
@@ -109,7 +115,10 @@ func pixyWork(job interface{}) interface{} {
 		component.Save(pixyCacheDir)
 	}
 
-	return components
+	return &pixyCompilationResult{
+		Components: components,
+		Files:      files,
+	}
 }
 
 func pixyFinish(results jobqueue.Results) {
@@ -118,11 +127,16 @@ func pixyFinish(results jobqueue.Results) {
 	// Create a map of available components
 	compiledComponents := make(map[string]bool)
 
-	for _, result := range results {
-		components := result.([]*pixy.Component)
+	for _, obj := range results {
+		result := obj.(*pixyCompilationResult)
 
-		for _, component := range components {
+		for _, component := range result.Components {
 			compiledComponents[component.Name] = true
+		}
+
+		// Add import paths after each file has been written
+		for _, file := range result.Files {
+			pixy.AddImportPaths(file)
 		}
 	}
 
@@ -137,7 +151,7 @@ func pixyFinish(results jobqueue.Results) {
 			continue
 		}
 
-		if fileName == "css" || fileName == "js" {
+		if !strings.HasSuffix(fileName, ".go") {
 			continue
 		}
 
@@ -149,7 +163,18 @@ func pixyFinish(results jobqueue.Results) {
 		}
 
 		generatedOldFile := path.Join(outputFolder, fileName)
-		os.Remove(generatedOldFile)
+		err := os.Remove(generatedOldFile)
+
+		if err != nil {
+			color.Red(err.Error())
+		}
+
+		generatedOldDirectory := path.Join(outputFolder, "stream"+strings.ToLower(component))
+		err = os.RemoveAll(generatedOldDirectory)
+
+		if err != nil {
+			color.Red(err.Error())
+		}
 	}
 
 	if utilitiesExist {
