@@ -126,6 +126,7 @@ func pixyFinish(results jobqueue.Results) {
 
 	// Create a map of available components
 	compiledComponents := make(map[string]bool)
+	var writtenFiles []string
 
 	for _, obj := range results {
 		result := obj.(*pixyCompilationResult)
@@ -134,13 +135,15 @@ func pixyFinish(results jobqueue.Results) {
 			compiledComponents[component.Name] = true
 		}
 
-		// Add import paths after each file has been written
-		for _, file := range result.Files {
-			err := pixy.AddImportPaths(file)
+		writtenFiles = append(writtenFiles, result.Files...)
+	}
 
-			if err != nil {
-				color.Red("Couldn't execute goimports: %v", err)
-			}
+	// Add import paths after each file has been written
+	if len(writtenFiles) > 0 {
+		err := pixy.AddImportPaths(writtenFiles...)
+
+		if err != nil {
+			color.Red("Couldn't execute goimports: %v", err)
 		}
 	}
 
