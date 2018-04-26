@@ -175,13 +175,6 @@ func pixyFinish(results jobqueue.Results) {
 		if err != nil {
 			color.Red(err.Error())
 		}
-
-		generatedOldDirectory := path.Join(outputFolder, "stream"+strings.ToLower(component))
-		err = os.RemoveAll(generatedOldDirectory)
-
-		if err != nil {
-			color.Red(err.Error())
-		}
 	}
 
 	if utilitiesExist {
