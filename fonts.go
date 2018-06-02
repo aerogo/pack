@@ -11,19 +11,19 @@ import (
 
 var fontsCSSChannel = make(chan string, 1)
 
-func init() {
+func fontsInit() {
 	// Cache folder
 	os.Mkdir(cacheFolder, 0777)
 	os.Mkdir(path.Join(cacheFolder, "fonts"), 0777)
 
 	go func() {
-		if len(app.Config.Fonts) > 0 {
-			cached, err := ReadFile(path.Join(cacheFolder, "fonts", strings.Join(app.Config.Fonts, "|")+".css"))
+		if len(config.Fonts) > 0 {
+			cached, err := ReadFile(path.Join(cacheFolder, "fonts", strings.Join(config.Fonts, "|")+".css"))
 
 			if err == nil {
 				fontsCSSChannel <- cached
 			} else {
-				fontsCSSChannel <- downloadFontsCSS(app.Config.Fonts)
+				fontsCSSChannel <- downloadFontsCSS(config.Fonts)
 			}
 		} else {
 			fontsCSSChannel <- ""
@@ -60,7 +60,7 @@ func downloadFontsCSS(fonts []string) string {
 	}
 
 	// Save in cache
-	ioutil.WriteFile(path.Join(cacheFolder, "fonts", strings.Join(app.Config.Fonts, "|")+".css"), []byte(fontsCSS), 0777)
+	ioutil.WriteFile(path.Join(cacheFolder, "fonts", strings.Join(config.Fonts, "|")+".css"), []byte(fontsCSS), 0777)
 
 	return fontsCSS
 }

@@ -46,7 +46,7 @@ func scriptWork(job interface{}) interface{} {
 }
 
 func scriptFinish(results jobqueue.Results) {
-	if app.Config.Scripts.Main == "" {
+	if config.Scripts.Main == "" {
 		panic(errors.New("Main script file has not been defined in config.json (config.scripts.main)"))
 	}
 
@@ -103,7 +103,7 @@ func scriptFinish(results jobqueue.Results) {
 	})
 
 	moduleList := strings.Join(modules, ",\n")
-	bundledJS := strings.Replace(moduleLoader, "${PACK_MODULES}", moduleList, 1) + "\n" + `require("scripts/` + app.Config.Scripts.Main + `");`
+	bundledJS := strings.Replace(moduleLoader, "${PACK_MODULES}", moduleList, 1) + "\n" + `require("scripts/` + config.Scripts.Main + `");`
 
 	// // Minify
 	m := minify.New()

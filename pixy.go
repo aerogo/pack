@@ -35,7 +35,7 @@ type pixyCompilationResult struct {
 	Files      []string
 }
 
-func init() {
+func pixyInit() {
 	// Create a clean "components" directory
 	if _, statErr := os.Stat(outputFolder); os.IsNotExist(statErr) {
 		os.Mkdir(outputFolder, 0777)
@@ -48,10 +48,7 @@ func init() {
 	// Get working directory
 	var err error
 	workDir, err = os.Getwd()
-
-	if err != nil {
-		panic(err)
-	}
+	PanicOnError(err)
 
 	// Create pixy cache
 	os.Mkdir(path.Join(cacheFolder, "pixy"), 0777)

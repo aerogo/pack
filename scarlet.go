@@ -36,7 +36,7 @@ func getBundledCSS(styles map[string]string) string {
 	scarletCodes := []string{}
 
 	// Ordered styles
-	for _, styleName := range app.Config.Styles {
+	for _, styleName := range config.Styles {
 		styleName = "styles/" + styleName + ".scarlet"
 		styleContent, exists := styles[styleName]
 

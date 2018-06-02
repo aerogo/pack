@@ -10,10 +10,19 @@ import (
 // Cache folder is used as our location for cache files.
 const cacheFolder = "/tmp/pack/"
 
-// App is used to access the aero config.json data.
-var app = aero.New()
+// config is used to access the aero config.json data.
+var config *aero.Configuration
 
 func main() {
+	// Load config file
+	var err error
+	config, err = aero.LoadConfig("config.json")
+	PanicOnError(err)
+
+	// Init
+	pixyInit()
+	fontsInit()
+
 	// Here we define the asset compilers.
 	// Each compiler is assigned to a specific extension
 	// and also has its own job queue where we will push
