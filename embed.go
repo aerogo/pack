@@ -11,7 +11,7 @@ import (
 	"github.com/aerogo/aero"
 )
 
-func init() {
+func embedInit() {
 	// Create embed cache
 	os.Mkdir(path.Join(cacheFolder, "embed"), 0777)
 }

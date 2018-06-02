@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/aerogo/aero"
@@ -19,9 +20,13 @@ func main() {
 	config, err = aero.LoadConfig("config.json")
 	PanicOnError(err)
 
+	// Cache folder
+	os.Mkdir(cacheFolder, 0777)
+
 	// Init
-	pixyInit()
 	fontsInit()
+	pixyInit()
+	embedInit()
 
 	// Here we define the asset compilers.
 	// Each compiler is assigned to a specific extension

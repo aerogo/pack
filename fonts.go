@@ -13,7 +13,6 @@ var fontsCSSChannel = make(chan string, 1)
 
 func fontsInit() {
 	// Cache folder
-	os.Mkdir(cacheFolder, 0777)
 	os.Mkdir(path.Join(cacheFolder, "fonts"), 0777)
 
 	go func() {
