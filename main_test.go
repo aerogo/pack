@@ -10,6 +10,7 @@ func TestCompiler(t *testing.T) {
 
 	main()
 
+	os.RemoveAll("components")
 	os.Chdir("..")
 }
 
@@ -21,5 +22,6 @@ func BenchmarkCompiler(b *testing.B) {
 		main()
 	}
 
+	os.RemoveAll("components")
 	os.Chdir("..")
 }
