@@ -16,6 +16,8 @@ notifications:
 
 before_script:
   - bash <(curl -s https://raw.githubusercontent.com/blitzprog/gotravis/master/before-script.sh)
+  - go get -u golang.org/x/tools/cmd/goimports
+  - go install golang.org/x/tools/cmd/goimports
 
 script:
   - bash <(curl -s https://raw.githubusercontent.com/blitzprog/gotravis/master/script.sh)
