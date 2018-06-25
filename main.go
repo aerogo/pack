@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/aerogo/aero"
@@ -9,7 +10,7 @@ import (
 )
 
 // Cache folder is used as our location for cache files.
-const cacheFolder = "/tmp/pack/"
+var cacheFolder = path.Join(os.TempDir(), "pack")
 
 // config is used to access the aero config.json data.
 var config *aero.Configuration
