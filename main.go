@@ -66,6 +66,9 @@ func main() {
 		if !exists {
 			return
 		}
+		
+		// Make sure we always use linux style path separators
+		file = filepath.ToSlash(file)
 
 		// Queue up work by sending the file path to the compiler
 		workerPool.Queue(file)
