@@ -72,6 +72,9 @@ func scriptFinish(results jobqueue.Results) {
 		// code = strings.TrimSpace(code)
 
 		scriptDir := filepath.Dir(file)
+		
+		// Normalize file paths (Windows)
+		scriptDir = strings.Replace(scriptDir, "\\", "/", -1)
 
 		// TODO: This is really hacky. Replace this with a proper algorithm.
 		code = strings.Replace(code, `require("./`, `require("`+scriptDir+`/`, -1)
