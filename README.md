@@ -10,7 +10,6 @@ Packs the assets for your web server.
 ## Installation
 
 ```
-go get -u github.com/aerogo/pack
 go install github.com/aerogo/pack
 ```
 
