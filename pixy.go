@@ -9,7 +9,7 @@ import (
 
 	"github.com/aerogo/flow/jobqueue"
 	"github.com/aerogo/pixy"
-	"github.com/fatih/color"
+	"github.com/blitzprog/color"
 )
 
 var (

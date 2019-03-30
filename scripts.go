@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/aerogo/flow/jobqueue"
-	"github.com/fatih/color"
+	"github.com/blitzprog/color"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
 )
