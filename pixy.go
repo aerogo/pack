@@ -126,7 +126,6 @@ func pixyFinish(results jobqueue.Results) {
 
 	// Create a map of available components
 	compiledComponents := make(map[string]bool)
-	var writtenFiles []string
 
 	for _, obj := range results {
 		result := obj.(*pixyCompilationResult)
@@ -134,8 +133,6 @@ func pixyFinish(results jobqueue.Results) {
 		for _, component := range result.Components {
 			compiledComponents[component.Name] = true
 		}
-
-		writtenFiles = append(writtenFiles, result.Files...)
 	}
 
 	// Delete all components that were removed
