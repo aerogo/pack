@@ -7,9 +7,11 @@ import (
 	"path"
 	"strings"
 
+	"github.com/akyoto/autoimport"
+
 	"github.com/aerogo/flow/jobqueue"
 	"github.com/aerogo/pixy"
-	"github.com/blitzprog/color"
+	"github.com/akyoto/color"
 )
 
 var (
@@ -22,6 +24,9 @@ var (
 
 	// The compiler for pixy files is initialized with the package name.
 	pixyCompiler = pixy.NewCompiler(outputFolder)
+
+	// Auto importer for pixy code
+	pixyImporter *autoimport.AutoImport
 
 	// Pixy announce prefix is the prefix used for terminal output on each file.
 	pixyAnnouncePrefix = " " + color.GreenString("❀") + " "
@@ -50,6 +55,9 @@ func pixyInit() {
 	workDir, err = os.Getwd()
 	PanicOnError(err)
 
+	// Create importer
+	pixyImporter = autoimport.New(workDir)
+
 	// Create pixy cache
 	os.Mkdir(path.Join(cacheFolder, "pixy"), 0777)
 }
@@ -60,10 +68,7 @@ func pixyWork(job interface{}) interface{} {
 
 	fullPath := path.Join(workDir, file)
 	fileStat, err := os.Stat(fullPath)
-
-	if err != nil {
-		panic(err)
-	}
+	PanicOnError(err)
 
 	hash := HashString(fullPath)
 	pixyCacheDir := path.Join(cacheFolder, "pixy", hash)
@@ -74,10 +79,7 @@ func pixyWork(job interface{}) interface{} {
 		// Use cached version if possible
 		if cacheErr == nil && cacheStat.ModTime().Unix() > fileStat.ModTime().Unix() {
 			files, err := ioutil.ReadDir(pixyCacheDir)
-
-			if err != nil {
-				panic(err)
-			}
+			PanicOnError(err)
 
 			components := []*pixy.Component{}
 
@@ -95,7 +97,7 @@ func pixyWork(job interface{}) interface{} {
 	}
 
 	// We need a fresh recompile
-	components, files, err := pixyCompiler.CompileFileAndSaveIn(file, outputFolder)
+	components, files, err := compileFileAndSaveIn(pixyCompiler, file, outputFolder)
 
 	if err != nil {
 		color.Red(err.Error())
@@ -109,7 +111,7 @@ func pixyWork(job interface{}) interface{} {
 
 	// Cache the components in the new cache folder
 	for _, component := range components {
-		component.Save(pixyCacheDir)
+		savePixyComponent(component, pixyCacheDir)
 	}
 
 	return &pixyCompilationResult{
@@ -133,15 +135,6 @@ func pixyFinish(results jobqueue.Results) {
 		}
 
 		writtenFiles = append(writtenFiles, result.Files...)
-	}
-
-	// Add import paths after each file has been written
-	if len(writtenFiles) > 0 {
-		err := pixy.AddImportPaths(writtenFiles...)
-
-		if err != nil {
-			color.Red("Couldn't execute goimports: %v", err)
-		}
 	}
 
 	// Delete all components that were removed
@@ -179,4 +172,37 @@ func pixyFinish(results jobqueue.Results) {
 	}
 
 	pixyCompiler.SaveUtilities(path.Join(outputFolder, "utils.go"))
+}
+
+// compileFileAndSaveIn compiles a pixy template from fileIn
+// and writes the resulting components to dirOut.
+func compileFileAndSaveIn(compiler *pixy.Compiler, fileIn string, dirOut string) ([]*pixy.Component, []string, error) {
+	components, err := compiler.CompileFile(fileIn)
+	files := make([]string, len(components))
+
+	for index, component := range components {
+		files[index] = savePixyComponent(component, dirOut)
+	}
+
+	return components, files, err
+}
+
+// savePixyComponent writes the component to the given directory and returns the file path.
+func savePixyComponent(component *pixy.Component, dirOut string) string {
+	file := path.Join(dirOut, component.Name+".go")
+	newCode, err := pixyImporter.Source(component.Code)
+
+	if err != nil {
+		color.Red("Can't autoimport " + file)
+		color.Red(err.Error())
+	}
+
+	err = ioutil.WriteFile(file, newCode, 0644)
+
+	if err != nil {
+		color.Red("Can't write to " + file)
+		color.Red(err.Error())
+	}
+
+	return file
 }

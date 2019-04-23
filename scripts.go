@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/aerogo/flow/jobqueue"
-	"github.com/blitzprog/color"
+	"github.com/akyoto/color"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
 )
@@ -72,7 +72,7 @@ func scriptFinish(results jobqueue.Results) {
 		// code = strings.TrimSpace(code)
 
 		scriptDir := filepath.Dir(file)
-		
+
 		// Normalize file paths (Windows)
 		scriptDir = strings.Replace(scriptDir, "\\", "/", -1)
 

@@ -6,22 +6,21 @@ import (
 )
 
 func TestCompiler(t *testing.T) {
+	defer os.Chdir("..")
+	defer os.RemoveAll("components")
+
 	os.Chdir("examples")
-
 	main()
-
-	os.RemoveAll("components")
-	os.Chdir("..")
 }
 
 func BenchmarkCompiler(b *testing.B) {
-	os.Chdir("examples")
+	defer os.Chdir("..")
+	defer os.RemoveAll("components")
 
+	os.Chdir("examples")
 	b.ReportAllocs()
+
 	for i := 0; i < b.N; i++ {
 		main()
 	}
-
-	os.RemoveAll("components")
-	os.Chdir("..")
 }

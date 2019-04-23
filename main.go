@@ -34,17 +34,17 @@ func main() {
 	// and also has its own job queue where we will push
 	// file paths as work assignments to the queue.
 	compilers := []AssetCompiler{
-		AssetCompiler{
+		{
 			Extension:      ".pixy",
 			Jobs:           jobqueue.New(pixyWork),
 			ProcessResults: pixyFinish,
 		},
-		AssetCompiler{
+		{
 			Extension:      ".scarlet",
 			Jobs:           jobqueue.New(scarletWork),
 			ProcessResults: scarletFinish,
 		},
-		AssetCompiler{
+		{
 			Extension:      ".js",
 			Jobs:           jobqueue.New(scriptWork),
 			ProcessResults: scriptFinish,
@@ -66,7 +66,7 @@ func main() {
 		if !exists {
 			return
 		}
-		
+
 		// Make sure we always use linux style path separators
 		file = filepath.ToSlash(file)
 

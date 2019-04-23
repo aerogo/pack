@@ -9,7 +9,7 @@ import (
 
 	"github.com/aerogo/flow/jobqueue"
 	"github.com/aerogo/scarlet"
-	"github.com/blitzprog/color"
+	"github.com/akyoto/color"
 )
 
 var cssCommentsRegex = regexp.MustCompile(`\/\*[^*]*\*+([^/*][^*]*\*+)*\/`)

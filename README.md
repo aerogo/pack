@@ -23,7 +23,7 @@ Run `pack` in your project directory. It will scan your project directory recurs
 
 Pack uses parallel compilation via job queues and is therefore extremely fast, much faster than the popular [webpack](https://github.com/webpack/webpack).
 
-78 [pixy](https://github.com/aerogo/pack) templates, 64 [scarlet](https://github.com/aerogo/scarlet) styles and 30 scripts can be compiled in [less than 60 milliseconds](https://gist.github.com/blitzprog/878ec0dfbcb4e2d7759c4119e004b68c). For comparison, webpack needs about 50 milliseconds for a single `Hello World` script.
+78 [pixy](https://github.com/aerogo/pack) templates, 64 [scarlet](https://github.com/aerogo/scarlet) styles and 30 scripts can be compiled in [less than 60 milliseconds](https://gist.github.com/akyoto/878ec0dfbcb4e2d7759c4119e004b68c). For comparison, webpack needs about 50 milliseconds for a single `Hello World` script.
 
 ## Components
 
