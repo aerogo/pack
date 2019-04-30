@@ -43,7 +43,7 @@ func ScanFiles(dir string, cb func(string)) {
 // HashString hashes a long string to a shorter representation.
 func HashString(data string) string {
 	h := xxhash.NewS64(0)
-	h.WriteString(data)
+	_, _ = h.WriteString(data)
 	return strconv.FormatUint(h.Sum64(), 16)
 }
 

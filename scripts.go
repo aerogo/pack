@@ -2,8 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
-	"errors"
 	"fmt"
 	"path"
 	"path/filepath"
@@ -47,7 +45,7 @@ func scriptWork(job interface{}) interface{} {
 
 func scriptFinish(results jobqueue.Results) {
 	if config.Scripts.Main == "" {
-		panic(errors.New("Main script file has not been defined in config.json (config.scripts.main)"))
+		panic("Main script file has not been defined in config.json (config.scripts.main)")
 	}
 
 	modules := make([]string, 0, len(results))
@@ -110,9 +108,14 @@ func scriptFinish(results jobqueue.Results) {
 
 	// // Minify
 	m := minify.New()
-	var buffer bytes.Buffer
+	buffer := strings.Builder{}
 	writer := bufio.NewWriter(&buffer)
-	js.Minify(m, writer, strings.NewReader(bundledJS), nil)
+	err := js.Minify(m, writer, strings.NewReader(bundledJS), nil)
+
+	if err != nil {
+		panic(err)
+	}
+
 	writer.Flush()
 	bundledJS = buffer.String()
 
