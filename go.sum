@@ -18,8 +18,8 @@ github.com/aerogo/linter-performance v1.0.0 h1:p+v7jfDHFXGzJ367iTdmKk2dKiqtz/TkH
 github.com/aerogo/linter-performance v1.0.0/go.mod h1:rsWhUG/KiUz+WRGSRkyN5kxbY1QEOshDdvW3zYAjF+Q=
 github.com/aerogo/linter-performance v1.0.1 h1:/1Hak+7sxpO2AkjdMVcpkyurmA4YD77EDi7FRnLqnwM=
 github.com/aerogo/linter-performance v1.0.1/go.mod h1:3ZXxPgQ0cEo0x6DCGZwXHrwKNYK86XvB5QRJR9s7Z6I=
-github.com/aerogo/pixy v1.1.0 h1:6BRRes24A2Dcf/RVzyWVtpANAZ5HeQr7XoTDSAPbUuo=
-github.com/aerogo/pixy v1.1.0/go.mod h1:v0n4DUJm11CzxWeGHX9AnSLAh5NBCi3IC3quemxauu8=
+github.com/aerogo/pixy v1.1.1 h1:YB6xkxGvENtlkuoPlhgaOKhpqj6CyCzA4K8EPEsYDCM=
+github.com/aerogo/pixy v1.1.1/go.mod h1:v0n4DUJm11CzxWeGHX9AnSLAh5NBCi3IC3quemxauu8=
 github.com/aerogo/scarlet v0.2.0 h1:Ir3ng9zopeIHzEqsz8F7q1bmVZJd0FnljNU7/W7HABU=
 github.com/aerogo/scarlet v0.2.0/go.mod h1:qJ+STFrqoxRvSKb9BnVETvLxJqjhyAeqqQXMy2V4iDI=
 github.com/aerogo/session v0.1.1 h1:NBy3+fPwyHAzollumyqptLIyLjFyHuIwYDcQOll7UVE=
