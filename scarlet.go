@@ -81,7 +81,8 @@ func getBundledCSS(styles map[string]string) string {
 	scarletCodes = append(scarletCodes, unorderedStyles...)
 
 	allScarletCodes := strings.Join(scarletCodes, "\n")
-	css, err := scarlet.Compile(allScarletCodes, false)
+	allScarletCodesReader := strings.NewReader(allScarletCodes)
+	css, err := scarlet.Compile(allScarletCodesReader, false)
 
 	if err != nil {
 		color.Red(err.Error())
