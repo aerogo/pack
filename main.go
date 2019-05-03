@@ -4,6 +4,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime/debug"
 
 	"github.com/aerogo/aero"
 	"github.com/aerogo/flow/jobqueue"
@@ -16,6 +17,9 @@ var cacheFolder = path.Join(os.TempDir(), "pack")
 var config *aero.Configuration
 
 func main() {
+	// Disable garbage collector
+	debug.SetGCPercent(-1)
+
 	// Load config file
 	var err error
 	config, err = aero.LoadConfig("config.json")
