@@ -9,7 +9,7 @@ Packs the assets for your web server.
 
 ## Installation
 
-```
+```shell
 go install github.com/aerogo/pack
 ```
 
