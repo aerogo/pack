@@ -7,12 +7,11 @@ import (
 	"path"
 	"strings"
 
-	"github.com/akyoto/autoimport"
-
-	"github.com/aerogo/aero"
 	"github.com/aerogo/flow/jobqueue"
 	"github.com/aerogo/pixy"
+	"github.com/akyoto/autoimport"
 	"github.com/akyoto/color"
+	"github.com/akyoto/stringutils/unsafe"
 )
 
 var (
@@ -188,7 +187,7 @@ func compileFileAndSaveIn(compiler *pixy.Compiler, fileIn string, dirOut string)
 // savePixyComponent writes the component to the given directory and returns the file path.
 func savePixyComponent(component *pixy.Component, dirOut string) string {
 	file := path.Join(dirOut, component.Name+".go")
-	newCode, err := pixyImporter.Source(aero.StringToBytesUnsafe(component.Code))
+	newCode, err := pixyImporter.Source(unsafe.StringToBytes(component.Code))
 
 	if err != nil {
 		color.Red("Can't autoimport " + file)

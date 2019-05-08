@@ -8,7 +8,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/aerogo/aero"
+	"github.com/akyoto/stringutils/unsafe"
 )
 
 func embedInit() {
@@ -34,13 +34,13 @@ func EmbedData(outputFile, packageName, funcName, data string) {
 	}
 
 	// Encode in Base64
-	data = base64.StdEncoding.EncodeToString(aero.StringToBytesUnsafe(data))
+	data = base64.StdEncoding.EncodeToString(unsafe.StringToBytes(data))
 
 	// Create Go code to load the embedded data
 	loader := "package " + packageName + "\n\nimport \"encoding/base64\"\n\n// " + funcName + " ...\nfunc " + funcName + "() string {\nencoded := `\n" + data + "\n`\ndecoded, _ := base64.StdEncoding.DecodeString(encoded)\nreturn string(decoded)\n}\n"
 
 	// Write the loader
-	ioutil.WriteFile(outputFileAbs, aero.StringToBytesUnsafe(loader), 0644)
+	ioutil.WriteFile(outputFileAbs, unsafe.StringToBytes(loader), 0644)
 
 	// Write the cache file
 	ioutil.WriteFile(cacheFilePath, dataHash, 0644)
