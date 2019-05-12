@@ -13,6 +13,5 @@ require (
 	github.com/akyoto/autoimport v0.6.2
 	github.com/akyoto/color v1.8.3
 	github.com/akyoto/stringutils v0.1.0
-	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/tdewolff/minify v2.3.6+incompatible
 )
