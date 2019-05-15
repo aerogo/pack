@@ -6,15 +6,11 @@ import (
 	"path/filepath"
 	"runtime/debug"
 
-	"github.com/aerogo/aero"
 	"github.com/aerogo/flow/jobqueue"
 )
 
 // Cache folder is used as our location for cache files.
 var cacheFolder = path.Join(os.TempDir(), "pack")
-
-// config is used to access the aero config.json data.
-var config *aero.Configuration
 
 func main() {
 	// Disable garbage collector
@@ -22,8 +18,11 @@ func main() {
 
 	// Load config file
 	var err error
-	config, err = aero.LoadConfig("config.json")
-	PanicOnError(err)
+	config, err = loadConfig("config.json")
+
+	if err != nil {
+		panic(err)
+	}
 
 	// Cache folder
 	os.Mkdir(cacheFolder, 0777)

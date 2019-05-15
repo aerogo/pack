@@ -46,10 +46,3 @@ func HashString(data string) string {
 	_, _ = h.WriteString(data)
 	return strconv.FormatUint(h.Sum64(), 16)
 }
-
-// PanicOnError will panic if the error is not nil.
-func PanicOnError(err error) {
-	if err != nil {
-		panic(err)
-	}
-}

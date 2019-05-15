@@ -53,7 +53,10 @@ func pixyInit() {
 	// Get working directory
 	var err error
 	workDir, err = os.Getwd()
-	PanicOnError(err)
+
+	if err != nil {
+		panic(err)
+	}
 
 	// Create importer
 	pixyImporter = autoimport.New(workDir)
@@ -68,7 +71,10 @@ func pixyWork(job interface{}) interface{} {
 
 	fullPath := path.Join(workDir, file)
 	fileStat, err := os.Stat(fullPath)
-	PanicOnError(err)
+
+	if err != nil {
+		panic(err)
+	}
 
 	hash := HashString(fullPath)
 	pixyCacheDir := path.Join(cacheFolder, "pixy", hash)
@@ -79,7 +85,10 @@ func pixyWork(job interface{}) interface{} {
 		// Use cached version if possible
 		if cacheErr == nil && cacheStat.ModTime().Unix() > fileStat.ModTime().Unix() {
 			files, err := ioutil.ReadDir(pixyCacheDir)
-			PanicOnError(err)
+
+			if err != nil {
+				panic(err)
+			}
 
 			components := []*pixy.Component{}
 
