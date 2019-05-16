@@ -1,10 +1,10 @@
-package main
+package pack
 
 import (
 	"github.com/aerogo/flow/jobqueue"
 )
 
-// AssetCompiler ...
+// AssetCompiler represents a compiler for a group of assets.
 type AssetCompiler struct {
 	Extension      string
 	Jobs           *jobqueue.JobQueue
