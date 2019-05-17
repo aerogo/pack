@@ -5,15 +5,20 @@ import (
 
 	"github.com/aerogo/flow/jobqueue"
 	"github.com/aerogo/pack"
-	js "github.com/aerogo/pack/assets/js"
-	pixy "github.com/aerogo/pack/assets/pixy"
-	scarlet "github.com/aerogo/pack/assets/scarlet"
+	jspacker "github.com/aerogo/pack/assets/js"
+	pixypacker "github.com/aerogo/pack/assets/pixy"
+	scarletpacker "github.com/aerogo/pack/assets/scarlet"
 	"github.com/akyoto/color"
 )
 
 func main() {
 	// Create a new packer
 	packer := pack.New(".")
+
+	// Initialize the asset packers
+	pixy := pixypacker.New(packer.Root)
+	scarlet := scarletpacker.New(packer.Root)
+	js := jspacker.New(packer.Root)
 
 	// Here we define the asset compilers.
 	// Each compiler is assigned to a specific extension

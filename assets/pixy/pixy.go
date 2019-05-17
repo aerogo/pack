@@ -4,18 +4,41 @@ import (
 	"fmt"
 
 	"github.com/aerogo/flow/jobqueue"
+	"github.com/aerogo/pixy"
 	"github.com/akyoto/color"
 )
 
-var (
-	// The prefix used for terminal output on each file.
-	prefix = " " + color.GreenString("❀") + " "
-)
+// PixyPacker is a packer for pixy files.
+type PixyPacker struct {
+	// Root directory
+	root string
 
-func Map(job interface{}) interface{} {
-	fmt.Println(prefix, job)
-	return nil
+	// The prefix used for terminal output on each file.
+	prefix string
 }
 
-func Reduce(results jobqueue.Results) {
+// New creates a new PixyPacker.
+func New(root string) *PixyPacker {
+	return &PixyPacker{
+		root:   root,
+		prefix: color.GreenString(" ✿ "),
+	}
+}
+
+// Map maps each job to its processed output.
+func (packer *PixyPacker) Map(job interface{}) interface{} {
+	fileName := job.(string)
+	fmt.Println(packer.prefix, fileName)
+	components, err := pixy.CompileFile(fileName)
+
+	if err != nil {
+		color.Red(err.Error())
+		return nil
+	}
+
+	return components
+}
+
+// Reduce combines all outputs.
+func (packer *PixyPacker) Reduce(results jobqueue.Results) {
 }

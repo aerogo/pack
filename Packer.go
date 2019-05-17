@@ -13,21 +13,21 @@ import (
 // Packer packs the assets for your app.
 type Packer struct {
 	Compilers []AssetCompiler
-	rootPath  string
+	Root      string
 	config    Configuration
 }
 
 // New creates a new packer.
-func New(rootPath string) *Packer {
+func New(root string) *Packer {
 	return &Packer{
-		rootPath: rootPath,
+		Root: root,
 	}
 }
 
 // Run starts packing.
 func (packer *Packer) Run() error {
 	// Load configuration
-	err := packer.LoadConfig(path.Join(packer.rootPath, "config.json"))
+	err := packer.LoadConfig(path.Join(packer.Root, "config.json"))
 
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func (packer *Packer) Run() error {
 		workerPools[compiler.Extension] = compiler.Jobs
 	}
 
-	err = eachFileIn(packer.rootPath, func(file string) {
+	err = eachFileIn(packer.Root, func(file string) {
 		// Check if we have a compiler registered for that file type
 		workerPool, exists := workerPools[filepath.Ext(file)]
 
