@@ -3,6 +3,7 @@ package jspacker
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -18,8 +19,11 @@ import (
 
 // JSPacker is a packer for javascript files.
 type JSPacker struct {
-	// Root root
+	// Root directory
 	root string
+
+	// Where embedded code will be stored
+	outputDirectory string
 
 	// The prefix used for terminal output on each file.
 	prefix string
@@ -34,10 +38,18 @@ func New(root string, scripts pack.ScriptsConfiguration) *JSPacker {
 		panic("Main script file has not been defined in config.json (config.scripts.main)")
 	}
 
+	outputDirectory := path.Join(root, "components", "js")
+	err := os.MkdirAll(outputDirectory, os.ModePerm)
+
+	if err != nil {
+		panic(err)
+	}
+
 	return &JSPacker{
-		root:    root,
-		prefix:  color.CyanString(" ❄ "),
-		scripts: scripts,
+		root:            root,
+		outputDirectory: outputDirectory,
+		prefix:          color.CyanString(" ❄ "),
+		scripts:         scripts,
 	}
 }
 
@@ -71,11 +83,11 @@ func (packer *JSPacker) Map(job interface{}) interface{} {
 	scriptDir := filepath.Dir(file)
 
 	// Normalize file paths (Windows)
-	scriptDir = strings.Replace(scriptDir, "\\", "/", -1)
+	scriptDir = strings.ReplaceAll(scriptDir, "\\", "/")
 
 	// TODO: This is really hacky. Replace this with a proper algorithm.
-	code = strings.Replace(code, `require("./`, `require("`+scriptDir+`/`, -1)
-	code = strings.Replace(code, `require("../`, `require("`+filepath.Clean(path.Join(scriptDir, ".."))+`/`, -1)
+	code = strings.ReplaceAll(code, `require("./`, `require("`+scriptDir+`/`)
+	code = strings.ReplaceAll(code, `require("../`, `require("`+filepath.Clean(path.Join(scriptDir, ".."))+`/`)
 
 	return code
 }
@@ -129,7 +141,7 @@ func (packer *JSPacker) Reduce(results jobqueue.Results) {
 	bundledJS = buffer.String()
 
 	// Write JS bundle into components/js/js.go where it can be used as js.Bundle()
-	embedFile := path.Join(packer.root, "components", "js", "js.go")
+	embedFile := path.Join(packer.outputDirectory, "js.go")
 	err = pack.EmbedData(embedFile, "js", "Bundle", bundledJS)
 
 	if err != nil {

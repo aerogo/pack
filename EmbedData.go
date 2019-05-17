@@ -36,7 +36,7 @@ func EmbedData(outputFile, packageName, funcName, data string) error {
 
 	// Create Go code to load the embedded data
 	loader := fmt.Sprintf(
-		"package %s\n\nimport \"encoding/base64\"\n\n// %s ...\nfunc %s() string {\nencoded := `\n%s\n`\ndecoded, _ := base64.StdEncoding.DecodeString(encoded)\nreturn string(decoded)\n}\n",
+		"package %s\n\nimport \"encoding/base64\"\n\n// %s returns the bundled data.\nfunc %s() string {\n\tencoded := `%s`\n\tdecoded, _ := base64.StdEncoding.DecodeString(encoded)\n\treturn string(decoded)\n}\n",
 		packageName,
 		funcName,
 		funcName,

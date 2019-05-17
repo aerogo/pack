@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"sort"
 	"strings"
 
@@ -19,6 +20,9 @@ type ScarletPacker struct {
 	// Root directory
 	root string
 
+	// Where embedded code will be stored
+	outputDirectory string
+
 	// The prefix used for terminal output on each file.
 	prefix string
 
@@ -28,10 +32,18 @@ type ScarletPacker struct {
 
 // New creates a new ScarletPacker.
 func New(root string, styles []string) *ScarletPacker {
+	outputDirectory := path.Join(root, "components", "css")
+	err := os.MkdirAll(outputDirectory, os.ModePerm)
+
+	if err != nil {
+		panic(err)
+	}
+
 	return &ScarletPacker{
-		root:   root,
-		prefix: color.YellowString(" ★ "),
-		styles: styles,
+		root:            root,
+		outputDirectory: outputDirectory,
+		prefix:          color.YellowString(" ★ "),
+		styles:          styles,
 	}
 }
 
@@ -49,7 +61,7 @@ func (packer *ScarletPacker) Map(job interface{}) interface{} {
 
 // Reduce combines all outputs.
 func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
-	bundledCSS := strings.Builder{}
+	buffer := strings.Builder{}
 
 	// Ordered styles
 	for _, name := range packer.styles {
@@ -62,7 +74,7 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 		}
 
 		fmt.Println(packer.prefix, name)
-		bundledCSS.WriteString(contents.(string))
+		buffer.WriteString(contents.(string))
 
 		// Remove the referenced style from the unordered results
 		// because we already wrote its contents into the buffer.
@@ -107,17 +119,23 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 
 	// Write all the remaining styles into the buffer
 	for _, code := range unorderedStyles {
-		bundledCSS.WriteString(code)
+		buffer.WriteString(code)
 	}
 
-	allCSSConcatenated := bundledCSS.String()
-	reader := strings.NewReader(allCSSConcatenated)
-	css, err := scarlet.Compile(reader, false)
+	bundledScarlet := buffer.String()
+	reader := strings.NewReader(bundledScarlet)
+	bundledCSS, err := scarlet.Compile(reader, false)
 
 	if err != nil {
 		color.Red(err.Error())
 		os.Exit(1)
 	}
 
-	fmt.Println(css)
+	// Write JS bundle into components/css/css.go where it can be used as css.Bundle()
+	embedFile := path.Join(packer.outputDirectory, "css.go")
+	err = pack.EmbedData(embedFile, "css", "Bundle", bundledCSS)
+
+	if err != nil {
+		panic(err)
+	}
 }

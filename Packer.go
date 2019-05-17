@@ -65,7 +65,7 @@ func (packer *Packer) Run() error {
 
 	// Now that the work is queued up,
 	// we can wait for each job queue to finish the work.
-	for _, compiler := range packer.Compilers {
+	for index, compiler := range packer.Compilers {
 		// Wait for jobs to finish
 		results := compiler.Jobs.Wait()
 
@@ -73,7 +73,7 @@ func (packer *Packer) Run() error {
 		compiler.ProcessResults(results)
 
 		// Add an empty line separator to make the output prettier
-		if len(results) > 0 {
+		if len(results) > 0 && index != len(packer.Compilers)-1 {
 			fmt.Println()
 		}
 	}

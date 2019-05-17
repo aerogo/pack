@@ -23,7 +23,6 @@ _testmain.go
 *.exe
 *.test
 *.prof
-*.js
 
 components
 /cmd/pack/pack
