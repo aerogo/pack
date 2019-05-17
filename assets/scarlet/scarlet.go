@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/OneOfOne/xxhash"
 	"github.com/aerogo/flow/jobqueue"
+	"github.com/aerogo/pack"
 	"github.com/aerogo/scarlet"
 	"github.com/akyoto/color"
 	"github.com/akyoto/stringutils/unsafe"
@@ -99,7 +99,7 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 		b := unorderedStyles[j]
 
 		if len(a) == len(b) {
-			return hashString(a) < hashString(b)
+			return pack.HashString(a) < pack.HashString(b)
 		}
 
 		return len(a) < len(b)
@@ -120,11 +120,4 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 	}
 
 	fmt.Println(css)
-}
-
-// hashString hashes a long string.
-func hashString(data string) uint64 {
-	h := xxhash.NewS64(0)
-	_, _ = h.WriteString(data)
-	return h.Sum64()
 }
