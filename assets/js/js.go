@@ -1,4 +1,4 @@
-package scarletpacker
+package jspacker
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 var (
 	// The prefix used for terminal output on each file.
-	prefix = " " + color.YellowString("★") + " "
+	prefix = " " + color.CyanString("❄") + " "
 )
 
 func Map(job interface{}) interface{} {

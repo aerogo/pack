@@ -1,46 +1,80 @@
 package pack
 
 import (
+	"fmt"
 	"os"
+	"path"
+	"path/filepath"
 
 	"github.com/aerogo/flow/jobqueue"
-	pixypacker "github.com/aerogo/pack/assets/pixy"
-	scarletpacker "github.com/aerogo/pack/assets/scarlet"
-	scriptpacker "github.com/aerogo/pack/assets/script"
 	jsoniter "github.com/json-iterator/go"
 )
 
 // Packer packs the assets for your app.
 type Packer struct {
+	Compilers []AssetCompiler
+	rootPath  string
 	config    Configuration
-	compilers []AssetCompiler
 }
 
 // New creates a new packer.
-func New() *Packer {
-	// Here we define the asset compilers.
-	// Each compiler is assigned to a specific extension
-	// and also has its own job queue where we will push
-	// file paths as work assignments to the queue.
+func New(rootPath string) *Packer {
 	return &Packer{
-		compilers: []AssetCompiler{
-			{
-				Extension:      ".pixy",
-				Jobs:           jobqueue.New(pixypacker.Map),
-				ProcessResults: pixypacker.Reduce,
-			},
-			{
-				Extension:      ".scarlet",
-				Jobs:           jobqueue.New(scarletpacker.Map),
-				ProcessResults: scarletpacker.Reduce,
-			},
-			{
-				Extension:      ".js",
-				Jobs:           jobqueue.New(scriptpacker.Map),
-				ProcessResults: scriptpacker.Reduce,
-			},
-		},
+		rootPath: rootPath,
 	}
+}
+
+// Run starts packing.
+func (packer *Packer) Run() error {
+	// Load configuration
+	err := packer.LoadConfig(path.Join(packer.rootPath, "config.json"))
+
+	if err != nil {
+		return err
+	}
+
+	// Map file extensions to their corresponding worker pool
+	workerPools := make(map[string]*jobqueue.JobQueue)
+
+	for _, compiler := range packer.Compilers {
+		workerPools[compiler.Extension] = compiler.Jobs
+	}
+
+	err = eachFileIn(packer.rootPath, func(file string) {
+		// Check if we have a compiler registered for that file type
+		workerPool, exists := workerPools[filepath.Ext(file)]
+
+		if !exists {
+			return
+		}
+
+		// Make sure we always use linux style path separators
+		file = filepath.ToSlash(file)
+
+		// Queue up work by sending the file path to the compiler
+		workerPool.Queue(file)
+	})
+
+	if err != nil {
+		return err
+	}
+
+	// Now that the work is queued up,
+	// we can wait for each job queue to finish the work.
+	for _, compiler := range packer.Compilers {
+		// Wait for jobs to finish
+		results := compiler.Jobs.Wait()
+
+		// Let the compiler do compiler-specific stuff with the results
+		compiler.ProcessResults(results)
+
+		// Add an empty line separator to make the output prettier
+		if len(results) > 0 {
+			fmt.Println()
+		}
+	}
+
+	return nil
 }
 
 // LoadConfig loads the pack configuration from the given file.

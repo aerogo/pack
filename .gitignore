@@ -24,5 +24,6 @@ _testmain.go
 *.test
 *.prof
 *.js
-/components
-/pack
+
+components
+/cmd/pack/pack
