@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/aerogo/flow/jobqueue"
+	"github.com/aerogo/pack"
 	"github.com/akyoto/color"
 )
 
@@ -17,7 +18,7 @@ type JSPacker struct {
 }
 
 // New creates a new JSPacker.
-func New(root string) *JSPacker {
+func New(root string, scripts pack.ScriptsConfiguration) *JSPacker {
 	return &JSPacker{
 		root:   root,
 		prefix: color.CyanString(" ❄ "),

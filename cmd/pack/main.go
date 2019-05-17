@@ -17,8 +17,8 @@ func main() {
 
 	// Initialize the asset packers
 	pixy := pixypacker.New(packer.Root)
-	scarlet := scarletpacker.New(packer.Root)
-	js := jspacker.New(packer.Root)
+	scarlet := scarletpacker.New(packer.Root, packer.Config.Styles)
+	js := jspacker.New(packer.Root, packer.Config.Scripts)
 
 	// Here we define the asset compilers.
 	// Each compiler is assigned to a specific extension
