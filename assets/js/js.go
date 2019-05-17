@@ -82,8 +82,8 @@ func (packer *JSPacker) Map(job interface{}) interface{} {
 
 	scriptDir := filepath.Dir(file)
 
-	// Normalize file paths (Windows)
-	scriptDir = strings.ReplaceAll(scriptDir, "\\", "/")
+	// Make sure we always use linux style path separators
+	scriptDir = filepath.ToSlash(scriptDir)
 
 	// TODO: This is really hacky. Replace this with a proper algorithm.
 	code = strings.ReplaceAll(code, `require("./`, `require("`+scriptDir+`/`)
@@ -97,6 +97,10 @@ func (packer *JSPacker) Reduce(results jobqueue.Results) {
 	modules := make([]string, 0, len(results))
 
 	for job, result := range results {
+		if result == nil {
+			continue
+		}
+
 		file := job.(string)
 		code := result.(string)
 

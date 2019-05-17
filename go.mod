@@ -7,6 +7,7 @@ require (
 	github.com/aerogo/flow v0.1.4
 	github.com/aerogo/pixy v1.2.4
 	github.com/aerogo/scarlet v0.2.4
+	github.com/akyoto/autoimport v0.6.3
 	github.com/akyoto/color v1.8.4
 	github.com/akyoto/stringutils v0.2.0
 	github.com/json-iterator/go v1.1.6

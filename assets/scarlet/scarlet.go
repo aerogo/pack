@@ -75,6 +75,7 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 
 		fmt.Println(packer.prefix, name)
 		buffer.WriteString(contents.(string))
+		buffer.WriteByte('\n')
 
 		// Remove the referenced style from the unordered results
 		// because we already wrote its contents into the buffer.
@@ -97,7 +98,7 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 		delete(results, name)
 	}
 
-	// Unordered styles
+	// Unordered styles outside of styles directory
 	for name, contents := range results {
 		fmt.Println(packer.prefix, name)
 		unorderedStyles = append(unorderedStyles, contents.(string))
@@ -120,6 +121,7 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 	// Write all the remaining styles into the buffer
 	for _, code := range unorderedStyles {
 		buffer.WriteString(code)
+		buffer.WriteByte('\n')
 	}
 
 	bundledScarlet := buffer.String()
