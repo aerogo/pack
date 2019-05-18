@@ -16,8 +16,6 @@ Run `pack` in your project directory. It will scan your project directory recurs
 
 Pack uses parallel compilation via job queues and is therefore extremely fast, much faster than the popular [webpack](https://github.com/webpack/webpack).
 
-Over 300 assets can be compiled in roughly 50 milliseconds.
-
 ## Components
 
 Since `components` is a generated directory you should list this directory in your `.gitignore` file.

@@ -6,8 +6,11 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/aerogo/flow/jobqueue"
+	"github.com/aerogo/pack"
 	"github.com/aerogo/pixy"
 	"github.com/akyoto/autoimport"
 	"github.com/akyoto/color"
@@ -61,11 +64,69 @@ func New(root string) *PixyPacker {
 func (packer *PixyPacker) Map(job interface{}) interface{} {
 	fileName := job.(string)
 	fmt.Println(packer.prefix, fileName)
+
+	fileStat, err := os.Stat(fileName)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// Each file is cached in a directory that saves
+	// each component inside the file as Go code.
+	fileNameHash := pack.HashString(fileName)
+	cacheDirectory := path.Join(packer.root, "components", ".cache", "pixy", strconv.FormatInt(int64(fileNameHash), 16))
+	cacheStat, cacheErr := os.Stat(cacheDirectory)
+
+	// Use cached version if possible
+	if cacheErr == nil && cacheStat.ModTime().Unix() > fileStat.ModTime().Unix() {
+		cachedComponentFiles, err := ioutil.ReadDir(cacheDirectory)
+
+		if err != nil {
+			panic(err)
+		}
+
+		// We will fake a list of compiled components by searching
+		// the cache directory and returning each file name without
+		// the ".go" suffix as a component name.
+		components := make([]*pixy.Component, 0, len(cachedComponentFiles))
+
+		for _, file := range cachedComponentFiles {
+			componentName := strings.TrimSuffix(file.Name(), ".go")
+
+			components = append(components, &pixy.Component{
+				Name: componentName,
+			})
+		}
+
+		return components
+	}
+
+	// We need a fresh recompile
 	components, _, err := packer.compileFileAndSaveIn(fileName, packer.outputDirectory)
 
 	if err != nil {
 		color.Red(err.Error())
 		return nil
+	}
+
+	// Now we need to save the compilation result to disk.
+	// First off, start with an empty directory.
+	// This will also reset the ModTime() of the directory.
+	err = os.RemoveAll(cacheDirectory)
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.MkdirAll(cacheDirectory, os.ModePerm)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// Cache the components in the new cache folder
+	for _, component := range components {
+		packer.saveComponent(component, cacheDirectory)
 	}
 
 	return components

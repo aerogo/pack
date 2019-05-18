@@ -54,7 +54,7 @@ func New(root string, styles []string, fonts []string) *ScarletPacker {
 		fontsChannel:    make(chan string, 1),
 	}
 
-	err = os.MkdirAll(path.Join(root, "components", "cache", "fonts"), os.ModePerm)
+	err = os.MkdirAll(path.Join(root, "components", ".cache", "fonts"), os.ModePerm)
 
 	if err != nil {
 		panic(err)
@@ -68,7 +68,7 @@ func New(root string, styles []string, fonts []string) *ScarletPacker {
 			return
 		}
 
-		cached, err := ioutil.ReadFile(path.Join(root, "components", "cache", "fonts", strings.Join(packer.fonts, "|")+".css"))
+		cached, err := ioutil.ReadFile(path.Join(root, "components", ".cache", "fonts", strings.Join(packer.fonts, "|")+".css"))
 
 		if err == nil {
 			packer.fontsChannel <- unsafe.BytesToString(cached)
@@ -82,7 +82,7 @@ func New(root string, styles []string, fonts []string) *ScarletPacker {
 		}
 
 		// Save in cache
-		err = ioutil.WriteFile(path.Join(root, "components", "cache", "fonts", strings.Join(packer.fonts, "|")+".css"), unsafe.StringToBytes(css), 0777)
+		err = ioutil.WriteFile(path.Join(root, "components", ".cache", "fonts", strings.Join(packer.fonts, "|")+".css"), unsafe.StringToBytes(css), 0777)
 
 		if err != nil {
 			panic(err)
