@@ -28,10 +28,16 @@ type ScarletPacker struct {
 
 	// A list of styles that should be compiled first, the order matters.
 	styles []string
+
+	// A list of Google fonts whose definition we are going to download.
+	fonts []string
+
+	// A buffered channel that contains our download result.
+	fontsChannel chan string
 }
 
 // New creates a new ScarletPacker.
-func New(root string, styles []string) *ScarletPacker {
+func New(root string, styles []string, fonts []string) *ScarletPacker {
 	outputDirectory := path.Join(root, "components", "css")
 	err := os.MkdirAll(outputDirectory, os.ModePerm)
 
@@ -39,12 +45,54 @@ func New(root string, styles []string) *ScarletPacker {
 		panic(err)
 	}
 
-	return &ScarletPacker{
+	packer := &ScarletPacker{
 		root:            root,
 		outputDirectory: outputDirectory,
 		prefix:          color.YellowString(" ★ "),
 		styles:          styles,
+		fonts:           fonts,
+		fontsChannel:    make(chan string, 1),
 	}
+
+	err = os.MkdirAll(path.Join(root, "components", "cache", "fonts"), os.ModePerm)
+
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		defer close(packer.fontsChannel)
+
+		if len(packer.fonts) == 0 {
+			packer.fontsChannel <- ""
+			return
+		}
+
+		cached, err := ioutil.ReadFile(path.Join(root, "components", "cache", "fonts", strings.Join(packer.fonts, "|")+".css"))
+
+		if err == nil {
+			packer.fontsChannel <- unsafe.BytesToString(cached)
+			return
+		}
+
+		css, err := downloadFonts(packer.fonts)
+
+		if err != nil {
+			panic(err)
+		}
+
+		// Save in cache
+		err = ioutil.WriteFile(path.Join(root, "components", "cache", "fonts", strings.Join(packer.fonts, "|")+".css"), unsafe.StringToBytes(css), 0777)
+
+		if err != nil {
+			panic(err)
+		}
+
+		// Send the compressed CSS for the fonts
+		packer.fontsChannel <- css
+	}()
+
+	return packer
 }
 
 // Map maps each job to its processed output.
@@ -132,6 +180,9 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 		color.Red(err.Error())
 		os.Exit(1)
 	}
+
+	// Prepend fonts
+	bundledCSS = <-packer.fontsChannel + bundledCSS
 
 	// Write JS bundle into components/css/css.go where it can be used as css.Bundle()
 	embedFile := path.Join(packer.outputDirectory, "css.go")

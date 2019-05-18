@@ -1,5 +1,7 @@
 {
-	"fonts": [],
+	"fonts": [
+		"Ubuntu"
+	],
 	"styles": [],
 	"scripts": {
 		"main": "main"
