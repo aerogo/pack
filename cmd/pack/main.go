@@ -18,7 +18,6 @@ func main() {
 	// Initialize the asset packers
 	pixy := pixypacker.New(packer.Root)
 	scarlet := scarletpacker.New(packer.Root, packer.Config.Styles, packer.Config.Fonts)
-	js := jspacker.New(packer.Root, packer.Config.Scripts)
 
 	// Here we define the asset compilers.
 	// Each compiler is assigned to a specific extension
@@ -35,11 +34,17 @@ func main() {
 			Jobs:           jobqueue.New(scarlet.Map),
 			ProcessResults: scarlet.Reduce,
 		},
-		{
+	}
+
+	// Only pack js files if the entry point has been defined
+	if packer.Config.Scripts.Main != "" {
+		js := jspacker.New(packer.Root, packer.Config.Scripts)
+
+		packer.Compilers = append(packer.Compilers, pack.AssetCompiler{
 			Extension:      ".js",
 			Jobs:           jobqueue.New(js.Map),
 			ProcessResults: js.Reduce,
-		},
+		})
 	}
 
 	// They see me rollin'
