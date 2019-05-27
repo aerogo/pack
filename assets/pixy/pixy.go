@@ -10,10 +10,10 @@ import (
 	"strings"
 
 	"github.com/aerogo/flow/jobqueue"
-	"github.com/aerogo/pack"
 	"github.com/aerogo/pixy"
 	"github.com/akyoto/autoimport"
 	"github.com/akyoto/color"
+	"github.com/akyoto/hash"
 	"github.com/akyoto/stringutils/unsafe"
 )
 
@@ -73,7 +73,7 @@ func (packer *PixyPacker) Map(job interface{}) interface{} {
 
 	// Each file is cached in a directory that saves
 	// each component inside the file as Go code.
-	fileNameHash := pack.HashString(fileName)
+	fileNameHash := hash.String(fileName)
 	cacheDirectory := path.Join(packer.root, "components", ".cache", "pixy", strconv.FormatInt(int64(fileNameHash), 16))
 	cacheStat, cacheErr := os.Stat(cacheDirectory)
 

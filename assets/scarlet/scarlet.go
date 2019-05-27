@@ -12,6 +12,7 @@ import (
 	"github.com/aerogo/pack"
 	"github.com/aerogo/scarlet"
 	"github.com/akyoto/color"
+	"github.com/akyoto/hash"
 	"github.com/akyoto/stringutils/unsafe"
 )
 
@@ -160,7 +161,7 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 		b := unorderedStyles[j]
 
 		if len(a) == len(b) {
-			return pack.HashString(a) < pack.HashString(b)
+			return hash.String(a) < hash.String(b)
 		}
 
 		return len(a) < len(b)
@@ -186,7 +187,7 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 
 	// Write JS bundle into components/css/css.go where it can be used as css.Bundle()
 	embedFile := path.Join(packer.outputDirectory, "css.go")
-	err = pack.EmbedData(embedFile, "css", "Bundle", bundledCSS)
+	err = pack.EmbedData(embedFile, packer.root, "css", "Bundle", bundledCSS)
 
 	if err != nil {
 		panic(err)

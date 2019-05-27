@@ -12,6 +12,7 @@ import (
 	"github.com/aerogo/flow/jobqueue"
 	"github.com/aerogo/pack"
 	"github.com/akyoto/color"
+	"github.com/akyoto/hash"
 	"github.com/akyoto/stringutils/unsafe"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
@@ -124,7 +125,7 @@ func (packer *JSPacker) Reduce(results jobqueue.Results) {
 		b := modules[j]
 
 		if len(a) == len(b) {
-			return pack.HashString(a) < pack.HashString(b)
+			return hash.String(a) < hash.String(b)
 		}
 
 		return len(a) < len(b)
@@ -146,7 +147,7 @@ func (packer *JSPacker) Reduce(results jobqueue.Results) {
 
 	// Write JS bundle into components/js/js.go where it can be used as js.Bundle()
 	embedFile := path.Join(packer.outputDirectory, "js.go")
-	err = pack.EmbedData(embedFile, "js", "Bundle", bundledJS)
+	err = pack.EmbedData(embedFile, packer.root, "js", "Bundle", bundledJS)
 
 	if err != nil {
 		panic(err)

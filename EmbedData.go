@@ -2,34 +2,48 @@ package pack
 
 import (
 	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
 	"path/filepath"
+	"strconv"
 
+	"github.com/akyoto/hash"
 	"github.com/akyoto/stringutils/unsafe"
 )
 
 // EmbedData embeds base64-encoded data in a Go function.
-func EmbedData(outputFile, packageName, funcName, data string) error {
+func EmbedData(outputFile, root, packageName, funcName, data string) error {
 	outputFileAbs, err := filepath.Abs(outputFile)
 
 	if err != nil {
 		return err
 	}
 
-	// dataHash := []byte(HashString(data))
-	// cacheFileName := HashString(outputFileAbs)
-	// cacheFilePath := path.Join(cacheFolder, "embed", cacheFileName)
+	// Try to use the cache if possible
+	dataHash := hash.String(data)
+	fileNameHash := hash.String(outputFileAbs)
+	cacheDirectory := path.Join(root, "components", ".cache", "embed")
+	err = os.MkdirAll(cacheDirectory, os.ModePerm)
 
-	// // Try to use cache if possible
-	// cachedHash, err := ioutil.ReadFile(cacheFilePath)
+	if err != nil {
+		return err
+	}
 
-	// if err == nil && bytes.Equal(dataHash, cachedHash) {
-	// 	// Does the file still exist in the project directory?
-	// 	if _, statErr := os.Stat(outputFileAbs); !os.IsNotExist(statErr) {
-	// 		return
-	// 	}
-	// }
+	cacheFilePath := path.Join(cacheDirectory, strconv.FormatInt(int64(fileNameHash), 16))
+	cachedHashBytes, err := ioutil.ReadFile(cacheFilePath)
+
+	if err == nil && binary.BigEndian.Uint64(cachedHashBytes) == dataHash {
+		// Does the file still exist in the project directory?
+		_, err = os.Stat(outputFileAbs)
+
+		if !os.IsNotExist(err) {
+			// Cache hit
+			return err
+		}
+	}
 
 	// Encode in Base64
 	base64EncodedData := base64.StdEncoding.EncodeToString(unsafe.StringToBytes(data))
@@ -44,7 +58,13 @@ func EmbedData(outputFile, packageName, funcName, data string) error {
 	)
 
 	// Write the cache file
-	// ioutil.WriteFile(cacheFilePath, dataHash, 0644)
+	dataHashBytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(dataHashBytes, dataHash)
+	err = ioutil.WriteFile(cacheFilePath, dataHashBytes, 0644)
+
+	if err != nil {
+		return err
+	}
 
 	// Write the loader
 	return ioutil.WriteFile(outputFileAbs, unsafe.StringToBytes(loader), 0644)
