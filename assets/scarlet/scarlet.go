@@ -39,26 +39,13 @@ type ScarletPacker struct {
 
 // New creates a new ScarletPacker.
 func New(root string, styles []string, fonts []string) *ScarletPacker {
-	outputDirectory := path.Join(root, "components", "css")
-	err := os.MkdirAll(outputDirectory, os.ModePerm)
-
-	if err != nil {
-		panic(err)
-	}
-
 	packer := &ScarletPacker{
 		root:            root,
-		outputDirectory: outputDirectory,
+		outputDirectory: path.Join(root, "components", "css"),
 		prefix:          color.YellowString(" ★ "),
 		styles:          styles,
 		fonts:           fonts,
 		fontsChannel:    make(chan string, 1),
-	}
-
-	err = os.MkdirAll(path.Join(root, "components", ".cache", "fonts"), os.ModePerm)
-
-	if err != nil {
-		panic(err)
 	}
 
 	go func() {
@@ -67,6 +54,12 @@ func New(root string, styles []string, fonts []string) *ScarletPacker {
 		if len(packer.fonts) == 0 {
 			packer.fontsChannel <- ""
 			return
+		}
+
+		err := os.MkdirAll(path.Join(root, "components", ".cache", "fonts"), os.ModePerm)
+
+		if err != nil {
+			panic(err)
 		}
 
 		cached, err := ioutil.ReadFile(path.Join(root, "components", ".cache", "fonts", strings.Join(packer.fonts, "|")+".css"))
@@ -110,6 +103,18 @@ func (packer *ScarletPacker) Map(job interface{}) interface{} {
 
 // Reduce combines all outputs.
 func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
+	// If there were no .scarlet files, do nothing.
+	if len(results) == 0 {
+		return
+	}
+
+	// Create "css" folder inside "components"
+	err := os.MkdirAll(packer.outputDirectory, os.ModePerm)
+
+	if err != nil {
+		panic(err)
+	}
+
 	buffer := strings.Builder{}
 
 	// Ordered styles

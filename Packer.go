@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/aerogo/flow/jobqueue"
-	"github.com/akyoto/color"
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -24,13 +23,8 @@ func New(root string) *Packer {
 		Root: root,
 	}
 
-	// Load configuration
-	err := packer.loadConfig(path.Join(packer.Root, "config.json"))
-
-	if err != nil {
-		color.Red(err.Error())
-		os.Exit(1)
-	}
+	// Load configuration if config.json exists.
+	_ = packer.loadConfig(path.Join(packer.Root, "config.json"))
 
 	return packer
 }

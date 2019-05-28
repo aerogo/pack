@@ -9,8 +9,8 @@ require (
 	github.com/aerogo/scarlet v0.2.5
 	github.com/akyoto/autoimport v0.6.3
 	github.com/akyoto/color v1.8.5
-	github.com/akyoto/hash v0.2.1
-	github.com/akyoto/stringutils v0.2.0
+	github.com/akyoto/hash v0.3.5
+	github.com/akyoto/stringutils v0.2.1
 	github.com/json-iterator/go v1.1.6
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
