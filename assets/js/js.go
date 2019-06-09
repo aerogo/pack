@@ -14,8 +14,8 @@ import (
 	"github.com/akyoto/color"
 	"github.com/akyoto/hash"
 	"github.com/akyoto/stringutils/unsafe"
-	"github.com/tdewolff/minify"
-	"github.com/tdewolff/minify/js"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/js"
 )
 
 // JSPacker is a packer for javascript files.
