@@ -35,10 +35,13 @@ type ScarletPacker struct {
 
 	// A buffered channel that contains our download result.
 	fontsChannel chan string
+
+	// Enable verbose output
+	verbose bool
 }
 
 // New creates a new ScarletPacker.
-func New(root string, styles []string, fonts []string) *ScarletPacker {
+func New(root string, styles []string, fonts []string, verbose bool) *ScarletPacker {
 	packer := &ScarletPacker{
 		root:            root,
 		outputDirectory: path.Join(root, "components", "css"),
@@ -46,6 +49,7 @@ func New(root string, styles []string, fonts []string) *ScarletPacker {
 		styles:          styles,
 		fonts:           fonts,
 		fontsChannel:    make(chan string, 1),
+		verbose:         verbose,
 	}
 
 	go func() {
@@ -127,7 +131,10 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 			continue
 		}
 
-		fmt.Println(packer.prefix, name)
+		if packer.verbose {
+			fmt.Println(packer.prefix, name)
+		}
+
 		buffer.WriteString(contents.(string))
 		buffer.WriteByte('\n')
 
@@ -145,7 +152,10 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 			continue
 		}
 
-		fmt.Println(packer.prefix, name)
+		if packer.verbose {
+			fmt.Println(packer.prefix, name)
+		}
+
 		unorderedStyles = append(unorderedStyles, contents.(string))
 
 		// Remove the referenced style from the unordered results
@@ -154,7 +164,10 @@ func (packer *ScarletPacker) Reduce(results jobqueue.Results) {
 
 	// Unordered styles outside of styles directory
 	for name, contents := range results {
-		fmt.Println(packer.prefix, name)
+		if packer.verbose {
+			fmt.Println(packer.prefix, name)
+		}
+
 		unorderedStyles = append(unorderedStyles, contents.(string))
 	}
 

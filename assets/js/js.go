@@ -31,10 +31,13 @@ type JSPacker struct {
 
 	// Scripts configuration
 	scripts pack.ScriptsConfiguration
+
+	// Enable verbose output
+	verbose bool
 }
 
 // New creates a new JSPacker.
-func New(root string, scripts pack.ScriptsConfiguration) *JSPacker {
+func New(root string, scripts pack.ScriptsConfiguration, verbose bool) *JSPacker {
 	if scripts.Main == "" {
 		panic("Main script file has not been defined in config.json (config.scripts.main)")
 	}
@@ -51,6 +54,7 @@ func New(root string, scripts pack.ScriptsConfiguration) *JSPacker {
 		outputDirectory: outputDirectory,
 		prefix:          color.CyanString(" ❄ "),
 		scripts:         scripts,
+		verbose:         verbose,
 	}
 }
 
@@ -115,7 +119,9 @@ func (packer *JSPacker) Reduce(results jobqueue.Results) {
 		moduleCode := fmt.Sprintf("\"%s\": function(exports) {%s\n}", modulePath, code)
 		modules = append(modules, moduleCode)
 
-		fmt.Println(packer.prefix, file)
+		if packer.verbose {
+			fmt.Println(packer.prefix, file)
+		}
 	}
 
 	// This doesn't really have any meaning besides making the order deterministic.

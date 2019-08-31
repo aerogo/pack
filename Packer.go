@@ -15,6 +15,7 @@ type Packer struct {
 	Compilers []AssetCompiler
 	Root      string
 	Config    Configuration
+	Verbose   bool
 }
 
 // New creates a new packer.
@@ -67,7 +68,7 @@ func (packer *Packer) Run() error {
 		compiler.ProcessResults(results)
 
 		// Add an empty line separator to make the output prettier
-		if len(results) > 0 && index != len(packer.Compilers)-1 {
+		if packer.Verbose && len(results) > 0 && index != len(packer.Compilers)-1 {
 			fmt.Println()
 		}
 	}

@@ -34,10 +34,13 @@ type PixyPacker struct {
 
 	// The prefix used for terminal output on each file.
 	prefix string
+
+	// Enable verbose output
+	verbose bool
 }
 
 // New creates a new PixyPacker.
-func New(root string) *PixyPacker {
+func New(root string, verbose bool) *PixyPacker {
 	outputDirectory := path.Join(root, "components")
 	err := os.MkdirAll(outputDirectory, os.ModePerm)
 
@@ -57,13 +60,17 @@ func New(root string) *PixyPacker {
 		compiler:        pixy.NewCompiler("components"),
 		importer:        autoimport.New(rootAbs),
 		prefix:          color.GreenString(" ✿ "),
+		verbose:         verbose,
 	}
 }
 
 // Map maps each job to its processed output.
 func (packer *PixyPacker) Map(job interface{}) interface{} {
 	fileName := job.(string)
-	fmt.Println(packer.prefix, fileName)
+
+	if packer.verbose {
+		fmt.Println(packer.prefix, fileName)
+	}
 
 	fileStat, err := os.Stat(fileName)
 

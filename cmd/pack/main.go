@@ -15,9 +15,17 @@ func main() {
 	// Create a new packer
 	packer := pack.New(".")
 
+	// Enable verbose output
+	for _, arg := range os.Args {
+		if arg == "-v" {
+			packer.Verbose = true
+			break
+		}
+	}
+
 	// Initialize the asset packers
-	pixy := pixypacker.New(packer.Root)
-	scarlet := scarletpacker.New(packer.Root, packer.Config.Styles, packer.Config.Fonts)
+	pixy := pixypacker.New(packer.Root, packer.Verbose)
+	scarlet := scarletpacker.New(packer.Root, packer.Config.Styles, packer.Config.Fonts, packer.Verbose)
 
 	// Here we define the asset compilers.
 	// Each compiler is assigned to a specific extension
@@ -38,7 +46,7 @@ func main() {
 
 	// Only pack js files if the entry point has been defined
 	if packer.Config.Scripts.Main != "" {
-		js := jspacker.New(packer.Root, packer.Config.Scripts)
+		js := jspacker.New(packer.Root, packer.Config.Scripts, packer.Verbose)
 
 		packer.Compilers = append(packer.Compilers, pack.AssetCompiler{
 			Extension:      ".js",
