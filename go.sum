@@ -2,8 +2,8 @@ github.com/aerogo/codetree v1.2.9 h1:Z01dFVK1Y5R8xF+9vnImtOQ05moEGs7XFNXlQIX28RY
 github.com/aerogo/codetree v1.2.9/go.mod h1:yMnyg3ZbbX5Jhyg6+BZK0LRFd3Vyf1eHREgNqC3CBfE=
 github.com/aerogo/flow v0.1.5 h1:wmSzIpHKV63CUsQ/YaLBti/5csUj1toK8jGvM+0z/fg=
 github.com/aerogo/flow v0.1.5/go.mod h1:kG63T/cHB2uR0nu0SGvy8d49J6YuI6LP1IehkP7VtwM=
-github.com/aerogo/http v1.1.2 h1:SbQ/b2IF0Z54eR97MtFpOCPgo2lTjvh1TWaccMCjqrA=
-github.com/aerogo/http v1.1.2/go.mod h1:h+m3WxevpaifyVpRAMV58qt8ScXSZhU1a5DdvBkRwwE=
+github.com/aerogo/http v1.1.3 h1:cvwOYL+zNEfNHvJcX6A6OgUwQ4KROlu8ypuQEQc1HtU=
+github.com/aerogo/http v1.1.3/go.mod h1:h+m3WxevpaifyVpRAMV58qt8ScXSZhU1a5DdvBkRwwE=
 github.com/aerogo/pixy v1.2.8 h1:sEtWdjaWyiVLsj/nh8WmMPjwl6SkwSNI0lH23zljKUk=
 github.com/aerogo/pixy v1.2.8/go.mod h1:BddpLok0HvXZqDl5EYHZ85mf392HtA9gPk7IQRuoFnM=
 github.com/aerogo/scarlet v0.3.1 h1:YwaPf20pwkifkGoON2RxbpZeUWcBXh4V+2B8I++Cl7w=

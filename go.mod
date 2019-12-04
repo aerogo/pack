@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/aerogo/flow v0.1.5
-	github.com/aerogo/http v1.1.2
+	github.com/aerogo/http v1.1.3
 	github.com/aerogo/pixy v1.2.8
 	github.com/aerogo/scarlet v0.3.1
 	github.com/akyoto/autoimport v0.6.5
